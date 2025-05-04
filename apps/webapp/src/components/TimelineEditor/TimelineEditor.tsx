@@ -234,6 +234,40 @@ export const TimelineEditor: React.FC = () => {
                     );
                   });
                 };
+                const handleEditEasing = (e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  const val = window.prompt(
+                    'Edit easing string (e.g. power1.inOut, cubic-bezier(0.4,0,0.2,1))',
+                    kf.easing || ''
+                  );
+                  if (val === null) return;
+                  import('../../state/projectStore').then(({ useProjectStore }) => {
+                    const projectData = useProjectStore.getState().projectData;
+                    if (!projectData) return;
+                    useProjectStore.getState().setProjectData(
+                      {
+                        ...projectData,
+                        timeline: {
+                          ...projectData.timeline,
+                          sequences: projectData.timeline.sequences.map(s =>
+                            s.elementId === seq.elementId
+                              ? {
+                                  ...s,
+                                  keyframes: s.keyframes.map((k, i) =>
+                                    i === kfIndex
+                                      ? { ...k, easing: val || undefined }
+                                      : k
+                                  ),
+                                }
+                              : s
+                          ),
+                        },
+                      },
+                      true
+                    );
+                  });
+                };
+
                 return (
                   <div
                     key={kfIndex}
@@ -244,7 +278,7 @@ export const TimelineEditor: React.FC = () => {
                       alignItems: 'center',
                       justifyContent: 'center',
                     }}
-                    title={`t=${kf.time}s`}
+                    title={`t=${kf.time}s${kf.easing ? `, easing: ${kf.easing}` : ''}`}
                   >
                     {kfIndex + 1}
                     <button
@@ -262,6 +296,21 @@ export const TimelineEditor: React.FC = () => {
                       tabIndex={-1}
                       aria-label="Edit keyframe"
                     >✎</button>
+                    <button
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#aaf3ff',
+                        fontSize: 15,
+                        marginLeft: 3,
+                        cursor: 'pointer',
+                        padding: 0,
+                      }}
+                      onClick={handleEditEasing}
+                      title="Edit Keyframe Easing"
+                      tabIndex={-1}
+                      aria-label="Edit keyframe easing"
+                    >∿</button>
                     <button
                       style={{
                         background: 'none',
