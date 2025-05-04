@@ -19,13 +19,22 @@ export const TimelineEditor: React.FC = () => {
     : 0;
 
   const handleTimelineClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    const target = e.currentTarget;
-    const rect = target.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const percent = Math.min(1, Math.max(0, x / rect.width));
-    if (timelineData.duration > 0) {
-      const newTime = Math.round(percent * timelineData.duration * 100) / 100;
-      seek(newTime);
+    try {
+      // eslint-disable-next-line no-console
+      console.log('[TimelineEditor] handleTimelineClick', e);
+      const target = e.currentTarget;
+      const rect = target.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const percent = Math.min(1, Math.max(0, x / rect.width));
+      if (timelineData.duration > 0) {
+        const newTime = Math.round(percent * timelineData.duration * 100) / 100;
+        // eslint-disable-next-line no-console
+        console.log('[TimelineEditor] seeking to', newTime);
+        seek(newTime);
+      }
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[TimelineEditor] Error in handleTimelineClick', err);
     }
   };
 
@@ -52,38 +61,47 @@ export const TimelineEditor: React.FC = () => {
       {timelineData.sequences.map((seq, index) => {
         // Add keyframe logic
         const handleAddKeyframe = (e: React.MouseEvent) => {
-          e.stopPropagation();
-          const t = window.prompt('Keyframe time (s)?', '0');
-          if (!t) return;
-          const time = parseFloat(t);
-          if (isNaN(time) || time < 0 || time > timelineData.duration) {
-            alert('Invalid time.');
-            return;
-          }
-          import('../../state/projectStore').then(({ useProjectStore }) => {
-            const projectData = useProjectStore.getState().projectData;
-            if (!projectData) return;
-            useProjectStore.getState().setProjectData(
-              {
-                ...projectData,
-                timeline: {
-                  ...projectData.timeline,
-                  sequences: projectData.timeline.sequences.map(s =>
-                    s.elementId === seq.elementId
-                      ? {
-                          ...s,
-                          keyframes: [
-                            ...s.keyframes,
-                            { time, properties: {} },
-                          ].sort((a, b) => a.time - b.time),
-                        }
-                      : s
-                  ),
+          try {
+            e.stopPropagation();
+            // eslint-disable-next-line no-console
+            console.log('[TimelineEditor] handleAddKeyframe', seq);
+            const t = window.prompt('Keyframe time (s)?', '0');
+            if (!t) return;
+            const time = parseFloat(t);
+            if (isNaN(time) || time < 0 || time > timelineData.duration) {
+              alert('Invalid time.');
+              return;
+            }
+            import('../../state/projectStore').then(({ useProjectStore }) => {
+              const projectData = useProjectStore.getState().projectData;
+              if (!projectData) return;
+              useProjectStore.getState().setProjectData(
+                {
+                  ...projectData,
+                  timeline: {
+                    ...projectData.timeline,
+                    sequences: projectData.timeline.sequences.map(s =>
+                      s.elementId === seq.elementId
+                        ? {
+                            ...s,
+                            keyframes: [
+                              ...s.keyframes,
+                              { time, properties: {} },
+                            ].sort((a, b) => a.time - b.time),
+                          }
+                        : s
+                    ),
+                  },
                 },
-              },
-              true
-            );
-          });
+                true
+              );
+              // eslint-disable-next-line no-console
+              console.log('[TimelineEditor] Added keyframe', { elementId: seq.elementId, time });
+            });
+          } catch (err) {
+            // eslint-disable-next-line no-console
+            console.error('[TimelineEditor] Error in handleAddKeyframe', err);
+          }
         };
 
         return (
@@ -125,147 +143,187 @@ export const TimelineEditor: React.FC = () => {
               />
               {seq.keyframes.map((kf, kfIndex) => {
                 const handleDeleteKeyframe = (e: React.MouseEvent) => {
-                  e.stopPropagation();
-                  if (!window.confirm('Delete this keyframe?')) return;
-                  import('../../state/projectStore').then(({ useProjectStore }) => {
-                    const projectData = useProjectStore.getState().projectData;
-                    if (!projectData) return;
-                    useProjectStore.getState().setProjectData(
-                      {
-                        ...projectData,
-                        timeline: {
-                          ...projectData.timeline,
-                          sequences: projectData.timeline.sequences.map(s =>
-                            s.elementId === seq.elementId
-                              ? {
-                                  ...s,
-                                  keyframes: s.keyframes.filter((_, i) => i !== kfIndex),
-                                }
-                              : s
-                          ),
+                  try {
+                    e.stopPropagation();
+                    // eslint-disable-next-line no-console
+                    console.log('[TimelineEditor] handleDeleteKeyframe', { kfIndex, seq });
+                    if (!window.confirm('Delete this keyframe?')) return;
+                    import('../../state/projectStore').then(({ useProjectStore }) => {
+                      const projectData = useProjectStore.getState().projectData;
+                      if (!projectData) return;
+                      useProjectStore.getState().setProjectData(
+                        {
+                          ...projectData,
+                          timeline: {
+                            ...projectData.timeline,
+                            sequences: projectData.timeline.sequences.map(s =>
+                              s.elementId === seq.elementId
+                                ? {
+                                    ...s,
+                                    keyframes: s.keyframes.filter((_, i) => i !== kfIndex),
+                                  }
+                                : s
+                            ),
+                          },
                         },
-                      },
-                      true
-                    );
-                  });
+                        true
+                      );
+                      // eslint-disable-next-line no-console
+                      console.log('[TimelineEditor] Deleted keyframe', { elementId: seq.elementId, kfIndex });
+                    });
+                  } catch (err) {
+                    // eslint-disable-next-line no-console
+                    console.error('[TimelineEditor] Error in handleDeleteKeyframe', err);
+                  }
                 };
                 const handleEditKeyframe = (e: React.MouseEvent) => {
-                  e.stopPropagation();
-                  const val = window.prompt(
-                    'Edit keyframe properties as JSON:',
-                    JSON.stringify(kf.properties, null, 2)
-                  );
-                  if (!val) return;
-                  let parsed: Record<string, any> | null = null;
                   try {
-                    parsed = JSON.parse(val);
-                  } catch {
-                    alert('Invalid JSON');
-                    return;
-                  }
-                  import('../../state/projectStore').then(({ useProjectStore }) => {
-                    const projectData = useProjectStore.getState().projectData;
-                    if (!projectData) return;
-                    useProjectStore.getState().setProjectData(
-                      {
-                        ...projectData,
-                        timeline: {
-                          ...projectData.timeline,
-                          sequences: projectData.timeline.sequences.map(s =>
-                            s.elementId === seq.elementId
-                              ? {
-                                  ...s,
-                                  keyframes: s.keyframes.map((k, i) =>
-                                    i === kfIndex
-                                      ? { ...k, properties: parsed! }
-                                      : k
-                                  ),
-                                }
-                              : s
-                          ),
-                        },
-                      },
-                      true
+                    e.stopPropagation();
+                    // eslint-disable-next-line no-console
+                    console.log('[TimelineEditor] handleEditKeyframe', { kf, seq });
+                    const val = window.prompt(
+                      'Edit keyframe properties as JSON:',
+                      JSON.stringify(kf.properties, null, 2)
                     );
-                  });
+                    if (!val) return;
+                    let parsed: Record<string, any> | null = null;
+                    try {
+                      parsed = JSON.parse(val);
+                    } catch {
+                      alert('Invalid JSON');
+                      // eslint-disable-next-line no-console
+                      console.error('[TimelineEditor] Invalid JSON in edit keyframe');
+                      return;
+                    }
+                    import('../../state/projectStore').then(({ useProjectStore }) => {
+                      const projectData = useProjectStore.getState().projectData;
+                      if (!projectData) return;
+                      useProjectStore.getState().setProjectData(
+                        {
+                          ...projectData,
+                          timeline: {
+                            ...projectData.timeline,
+                            sequences: projectData.timeline.sequences.map(s =>
+                              s.elementId === seq.elementId
+                                ? {
+                                    ...s,
+                                    keyframes: s.keyframes.map((k, i) =>
+                                      i === kfIndex
+                                        ? { ...k, properties: parsed! }
+                                        : k
+                                    ),
+                                  }
+                                : s
+                            ),
+                          },
+                        },
+                        true
+                      );
+                      // eslint-disable-next-line no-console
+                      console.log('[TimelineEditor] Edited keyframe props', { seq, kfIndex, parsed });
+                    });
+                  } catch (err) {
+                    // eslint-disable-next-line no-console
+                    console.error('[TimelineEditor] Error in handleEditKeyframe', err);
+                  }
                 };
 
                 const handleEditKeyframeTime = (e: React.MouseEvent) => {
-                  e.stopPropagation();
-                  const val = window.prompt(
-                    'Edit keyframe time (s):',
-                    String(kf.time)
-                  );
-                  if (!val) return;
-                  const newTime = parseFloat(val);
-                  if (
-                    isNaN(newTime) ||
-                    newTime < 0 ||
-                    newTime > timelineData.duration
-                  ) {
-                    alert('Invalid time');
-                    return;
-                  }
-                  import('../../state/projectStore').then(({ useProjectStore }) => {
-                    const projectData = useProjectStore.getState().projectData;
-                    if (!projectData) return;
-                    useProjectStore.getState().setProjectData(
-                      {
-                        ...projectData,
-                        timeline: {
-                          ...projectData.timeline,
-                          sequences: projectData.timeline.sequences.map(s =>
-                            s.elementId === seq.elementId
-                              ? {
-                                  ...s,
-                                  keyframes: s.keyframes
-                                    .map((k, i) =>
-                                      i === kfIndex
-                                        ? { ...k, time: newTime }
-                                        : k
-                                    )
-                                    .sort((a, b) => a.time - b.time),
-                                }
-                              : s
-                          ),
-                        },
-                      },
-                      true
+                  try {
+                    e.stopPropagation();
+                    // eslint-disable-next-line no-console
+                    console.log('[TimelineEditor] handleEditKeyframeTime', { kf, seq });
+                    const val = window.prompt(
+                      'Edit keyframe time (s):',
+                      String(kf.time)
                     );
-                  });
+                    if (!val) return;
+                    const newTime = parseFloat(val);
+                    if (
+                      isNaN(newTime) ||
+                      newTime < 0 ||
+                      newTime > timelineData.duration
+                    ) {
+                      alert('Invalid time');
+                      // eslint-disable-next-line no-console
+                      console.error('[TimelineEditor] Invalid keyframe time', newTime);
+                      return;
+                    }
+                    import('../../state/projectStore').then(({ useProjectStore }) => {
+                      const projectData = useProjectStore.getState().projectData;
+                      if (!projectData) return;
+                      useProjectStore.getState().setProjectData(
+                        {
+                          ...projectData,
+                          timeline: {
+                            ...projectData.timeline,
+                            sequences: projectData.timeline.sequences.map(s =>
+                              s.elementId === seq.elementId
+                                ? {
+                                    ...s,
+                                    keyframes: s.keyframes
+                                      .map((k, i) =>
+                                        i === kfIndex
+                                          ? { ...k, time: newTime }
+                                          : k
+                                      )
+                                      .sort((a, b) => a.time - b.time),
+                                  }
+                                : s
+                            ),
+                          },
+                        },
+                        true
+                      );
+                      // eslint-disable-next-line no-console
+                      console.log('[TimelineEditor] Edited keyframe time', { seq, kfIndex, newTime });
+                    });
+                  } catch (err) {
+                    // eslint-disable-next-line no-console
+                    console.error('[TimelineEditor] Error in handleEditKeyframeTime', err);
+                  }
                 };
                 const handleEditEasing = (e: React.MouseEvent) => {
-                  e.stopPropagation();
-                  const val = window.prompt(
-                    'Edit easing string (e.g. power1.inOut, cubic-bezier(0.4,0,0.2,1))',
-                    kf.easing || ''
-                  );
-                  if (val === null) return;
-                  import('../../state/projectStore').then(({ useProjectStore }) => {
-                    const projectData = useProjectStore.getState().projectData;
-                    if (!projectData) return;
-                    useProjectStore.getState().setProjectData(
-                      {
-                        ...projectData,
-                        timeline: {
-                          ...projectData.timeline,
-                          sequences: projectData.timeline.sequences.map(s =>
-                            s.elementId === seq.elementId
-                              ? {
-                                  ...s,
-                                  keyframes: s.keyframes.map((k, i) =>
-                                    i === kfIndex
-                                      ? { ...k, easing: val || undefined }
-                                      : k
-                                  ),
-                                }
-                              : s
-                          ),
-                        },
-                      },
-                      true
+                  try {
+                    e.stopPropagation();
+                    // eslint-disable-next-line no-console
+                    console.log('[TimelineEditor] handleEditEasing', { kf, seq });
+                    const val = window.prompt(
+                      'Edit easing string (e.g. power1.inOut, cubic-bezier(0.4,0,0.2,1))',
+                      kf.easing || ''
                     );
-                  });
+                    if (val === null) return;
+                    import('../../state/projectStore').then(({ useProjectStore }) => {
+                      const projectData = useProjectStore.getState().projectData;
+                      if (!projectData) return;
+                      useProjectStore.getState().setProjectData(
+                        {
+                          ...projectData,
+                          timeline: {
+                            ...projectData.timeline,
+                            sequences: projectData.timeline.sequences.map(s =>
+                              s.elementId === seq.elementId
+                                ? {
+                                    ...s,
+                                    keyframes: s.keyframes.map((k, i) =>
+                                      i === kfIndex
+                                        ? { ...k, easing: val || undefined }
+                                        : k
+                                    ),
+                                  }
+                                : s
+                            ),
+                          },
+                        },
+                        true
+                      );
+                      // eslint-disable-next-line no-console
+                      console.log('[TimelineEditor] Edited keyframe easing', { seq, kfIndex, val });
+                    });
+                  } catch (err) {
+                    // eslint-disable-next-line no-console
+                    console.error('[TimelineEditor] Error in handleEditEasing', err);
+                  }
                 };
 
                 const isSelected = seq.elementId === selectedElementId;
