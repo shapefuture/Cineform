@@ -19,20 +19,39 @@ export class OpenRouterProvider implements IAiProvider {
   private client: OpenAI | null = null;
   private model: string = 'openai/gpt-4o-mini';
 
+  private log(message: string, data?: any) {
+    // eslint-disable-next-line no-console
+    console.log(`[OpenRouterProvider] ${message}`, data ?? '');
+  }
+
+  private error(message: string, error?: any) {
+    // eslint-disable-next-line no-console
+    console.error(`[OpenRouterProvider] ${message}:`, error);
+  }
+
   initialize(apiKey: string, options?: { model?: string; baseURL?: string }): void {
+    this.log('initialize called', { apiKey: !!apiKey, options });
     if (!apiKey) {
+      this.error('No API key provided to initialize');
       throw new Error('OpenRouter API key is required.');
     }
-    this.client = new OpenAI({
-      apiKey: apiKey,
-      baseURL: options?.baseURL ?? 'https://openrouter.ai/api/v1',
-    });
-    this.model = options?.model ?? this.model;
-    console.log(`OpenRouter Provider Initialized with model: ${this.model}`);
+    try {
+      this.client = new OpenAI({
+        apiKey: apiKey,
+        baseURL: options?.baseURL ?? 'https://openrouter.ai/api/v1',
+      });
+      this.model = options?.model ?? this.model;
+      this.log(`OpenRouter Provider Initialized with model: ${this.model}`);
+    } catch (err: any) {
+      this.error('Error initializing OpenAI client', err);
+      throw err;
+    }
   }
 
   async generateAnimationStructure(params: GenerateAnimationParams): Promise<GenerateAnimationResponse> {
+    this.log('generateAnimationStructure called', { params });
     if (!this.client) {
+      this.error('Client not initialized');
       return { success: false, error: 'OpenRouter client not initialized.' };
     }
 
@@ -76,7 +95,7 @@ Example Output:
       });
 
       const rawResponse = completion.choices[0]?.message?.content;
-      console.log('AI Raw Response:', rawResponse);
+      this.log('AI Raw Response', rawResponse);
 
       const parsed = safeJsonParse<ExpectedAiResponse>(rawResponse);
 
@@ -88,21 +107,25 @@ Example Output:
           typeof parsed.data.timeline.duration !== 'number' ||
           !Array.isArray(parsed.data.timeline.sequences)
         ) {
+          this.error('Parsed JSON structure is invalid', parsed.data);
           return { success: false, error: 'Parsed JSON structure is invalid.', rawResponse: rawResponse };
         }
-        console.log('AI Parsed Data:', parsed.data);
+        this.log('AI Parsed Data', parsed.data);
         return { success: true, elements: parsed.data.elements, timeline: parsed.data.timeline, rawResponse: rawResponse };
       } else {
+        this.error('Failed to parse valid JSON from AI response', parsed.error);
         return { success: false, error: `Failed to parse valid JSON from AI response. Parser Error: ${parsed.error}`, rawResponse: rawResponse };
       }
     } catch (error: any) {
-      console.error('Error calling OpenRouter API:', error);
+      this.error('Error calling OpenRouter API', error);
       return { success: false, error: `API Call Error: ${error.message}` };
     }
   }
 
   async generateSuggestions(params: GenerateSuggestionsParams): Promise<GenerateSuggestionsResponse> {
+    this.log('generateSuggestions called', { params });
     if (!this.client) {
+      this.error('Client not initialized');
       return { success: false, error: 'OpenRouter client not initialized.' };
     }
 
@@ -146,15 +169,19 @@ Example Suggestion:
       });
 
       const rawResponse = completion.choices[0]?.message?.content;
+      this.log('AI Suggestions Raw Response', rawResponse);
       // Attempt to parse suggestions array
       const parsed = safeJsonParse<AnimationSuggestion[]>(rawResponse);
 
       if (parsed.success && Array.isArray(parsed.data)) {
+        this.log('AI Suggestions parsed', parsed.data);
         return { success: true, suggestions: parsed.data };
       } else {
+        this.error('Failed to parse valid suggestions JSON', parsed.error);
         return { success: false, error: `Failed to parse valid JSON array from AI response. Error: ${parsed.error}` };
       }
     } catch (error: any) {
+      this.error('Error calling OpenRouter API for suggestions', error);
       return { success: false, error: `API Call Error: ${error.message}` };
     }
   }
