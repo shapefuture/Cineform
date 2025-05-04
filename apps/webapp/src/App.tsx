@@ -27,6 +27,7 @@ function App() {
     redo,
     undoStack,
     redoStack,
+  dirty,
   } = useProjectStore();
 
   // Global undo/redo keyboard shortcuts
@@ -111,7 +112,23 @@ function App() {
     <AppLayout
       header={
         <div>
-          <h1>Cineform Forge</h1>
+          <h1>
+            Cineform Forge{' '}
+            {dirty && (
+              <span style={{
+                color: '#ffd646',
+                marginLeft: 14,
+                fontSize: '0.8em',
+                background: '#563d0b',
+                borderRadius: 7,
+                padding: '2px 11px',
+                fontWeight: 600,
+                letterSpacing: 1.1,
+              }}>
+                unsaved
+              </span>
+            )}
+          </h1>
           <button onClick={createNewProject}>New</button>
           <button onClick={handleSave} disabled={!projectData}>
             Save

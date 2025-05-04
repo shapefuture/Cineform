@@ -61,7 +61,7 @@ function loadProjectFromStorage(): ProjectData | null {
   }
 }
 
-export const useProjectStore = create<ProjectState>((set, get) => ({
+export const useProjectStore = create<ProjectState & { dirty: boolean }>((set, get) => ({
   projectData: loadProjectFromStorage(),
   selectedElementId: null,
   isLoadingAi: false,
@@ -73,6 +73,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   playbackState: null,
   undoStack: [],
   redoStack: [],
+  dirty: false,
 
   _engine: null,
 
@@ -98,6 +99,10 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
   setProjectData: (data, pushToUndo = true) => {
     const prev = get().projectData;
+    const lastSaved = loadProjectFromStorage();
+    const changed =
+      JSON.stringify(data) !== JSON.stringify(lastSaved);
+
     if (pushToUndo && prev) {
       set(state => ({
         projectData: data,
@@ -105,9 +110,10 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
         redoStack: [],
         selectedElementId: null,
         aiError: null,
+        dirty: changed,
       }));
     } else {
-      set({ projectData: data, selectedElementId: null, aiError: null });
+      set({ projectData: data, selectedElementId: null, aiError: null, dirty: changed });
     }
     // Always persist after every projectData change
     try {
