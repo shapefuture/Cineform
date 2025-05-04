@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { throttle } from '../utils/throttle';
 import type { ProjectData, AnimationElement, TimelineData, AnimationSuggestion } from '@cineform-forge/shared-types';
 import { AnimationAssistant } from '@cineform-forge/ai-assistant';
 import type { GenerateAnimationResponse } from '@cineform-forge/ai-assistant';
@@ -51,6 +52,17 @@ const createNewEmptyProject = (): ProjectData => ({
 
 const LOCAL_STORAGE_KEY = 'cineformProject';
 
+// Lightweight throttle utility for local autosave
+let saveTimeout: number | null = null;
+const throttledSave = (data: ProjectData) => {
+  if (saveTimeout) clearTimeout(saveTimeout);
+  saveTimeout = window.setTimeout(() => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
+    } catch {}
+  }, 200);
+};
+
 function loadProjectFromStorage(): ProjectData | null {
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -100,8 +112,7 @@ export const useProjectStore = create<ProjectState & { dirty: boolean }>((set, g
   setProjectData: (data, pushToUndo = true) => {
     const prev = get().projectData;
     const lastSaved = loadProjectFromStorage();
-    const changed =
-      JSON.stringify(data) !== JSON.stringify(lastSaved);
+    const changed = JSON.stringify(data) !== JSON.stringify(lastSaved);
 
     if (pushToUndo && prev) {
       set(state => ({
@@ -115,12 +126,8 @@ export const useProjectStore = create<ProjectState & { dirty: boolean }>((set, g
     } else {
       set({ projectData: data, selectedElementId: null, aiError: null, dirty: changed });
     }
-    // Always persist after every projectData change
-    try {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
-    } catch (err) {
-      // ignore quota or serialization errors for MVP
-    }
+    // Throttled autosave after every projectData change
+    throttledSave(data);
   },
 
   undo: () => {
@@ -129,8 +136,10 @@ export const useProjectStore = create<ProjectState & { dirty: boolean }>((set, g
       set({
         projectData: undoStack[undoStack.length - 1],
         undoStack: undoStack.slice(0, -1),
-        redoStack: [...redoStack, projectData]
+        redoStack: [...redoStack, projectData],
+        dirty: true,
       });
+      throttledSave(undoStack[undoStack.length - 1]);
     }
   },
 
@@ -140,8 +149,10 @@ export const useProjectStore = create<ProjectState & { dirty: boolean }>((set, g
       set({
         projectData: redoStack[redoStack.length - 1],
         redoStack: redoStack.slice(0, -1),
-        undoStack: [...undoStack, projectData]
+        undoStack: [...undoStack, projectData],
+        dirty: true,
       });
+      throttledSave(redoStack[redoStack.length - 1]);
     }
   },
 
