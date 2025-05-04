@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { CineforgeEngine, type RenderingTarget } from '@cineform-forge/engine';
 import type { ProjectData } from '@cineform-forge/shared-types';
 import styles from './PreviewPanel.module.css';
+import { useProjectStore } from '../../state/projectStore';
 
 interface PreviewPanelProps {
   projectData: ProjectData | null;
@@ -17,6 +18,7 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ projectData }) => {
   const engineRef = useRef<CineforgeEngine | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [renderingTarget, setRenderingTarget] = useState<RenderingTarget>('dom');
+  const setPlaybackState = useProjectStore(s => s.setPlaybackState);
 
   // Instantiates engine and manages switching rendering targets.
   useEffect(() => {
@@ -40,6 +42,24 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ projectData }) => {
     // Reload projectData (if any)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [renderingTarget]);
+
+  // Listen for playback updates and set playbackState in store
+  useEffect(() => {
+    if (!engineRef.current) return;
+    const updatePlayback = () => {
+      const state = engineRef.current?.getPlaybackState();
+      if (state) setPlaybackState(state);
+    };
+    engineRef.current.on('update', updatePlayback);
+    engineRef.current.on('start', updatePlayback);
+    engineRef.current.on('complete', updatePlayback);
+    return () => {
+      engineRef.current?.off('update', updatePlayback);
+      engineRef.current?.off('start', updatePlayback);
+      engineRef.current?.off('complete', updatePlayback);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [engineRef.current]);
 
   useEffect(() => {
     const load = async () => {

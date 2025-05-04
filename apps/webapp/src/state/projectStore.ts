@@ -6,6 +6,8 @@ import type { GenerateAnimationResponse } from '@cineform-forge/ai-assistant';
 // Get API key from Vite environment variables
 const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY as string;
 
+import type { PlaybackState } from '@cineform-forge/engine';
+
 interface ProjectState {
   projectData: ProjectData | null;
   selectedElementId: string | null;
@@ -15,9 +17,11 @@ interface ProjectState {
   suggestions: AnimationSuggestion[];
   isLoadingSuggestions: boolean;
   suggestionsError: string | null;
+  playbackState: PlaybackState | null;
 
   setProjectData: (data: ProjectData | null) => void;
   setSelectedElementId: (id: string | null) => void;
+  setPlaybackState: (ps: PlaybackState) => void;
   generateAnimation: (prompt: string) => Promise<void>;
   loadProject: (data: ProjectData) => void;
   createNewProject: () => void;
@@ -45,11 +49,14 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   suggestions: [],
   isLoadingSuggestions: false,
   suggestionsError: null,
+  playbackState: null,
 
   setProjectData: (data) =>
     set({ projectData: data, selectedElementId: null, aiError: null }),
 
   setSelectedElementId: (id) => set({ selectedElementId: id }),
+
+  setPlaybackState: (ps) => set({ playbackState: ps }),
 
   generateAnimation: async (prompt) => {
     set({ isLoadingAi: true, aiError: null });
