@@ -143,7 +143,7 @@ function App() {
         </div>
       }
       leftPanel={<ElementsPanel />}
-      mainPanel={<PreviewPanel projectData={projectData} />}
+      mainPanel={<PreviewPanel />}
       rightPanel={<PropertiesPanel />}
       bottomPanel={
         <>
