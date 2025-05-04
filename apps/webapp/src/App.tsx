@@ -142,19 +142,13 @@ function App() {
           )}
         </div>
       }
-      leftPanel={
-        <ElementsPanel
-          elements={projectData?.elements ?? []}
-          selectedElementId={selectedElementId}
-          onSelectElement={setSelectedElementId}
-        />
-      }
+      leftPanel={<ElementsPanel />}
       mainPanel={<PreviewPanel projectData={projectData} />}
       rightPanel={<PropertiesPanel />}
       bottomPanel={
         <>
           <AIPrompt onSubmitPrompt={generateAnimation} isLoading={isLoadingAi} />
-          <TimelineEditor timelineData={projectData?.timeline ?? null} />
+          <TimelineEditor />
           <AISuggestionsPanel />
         </>
       }

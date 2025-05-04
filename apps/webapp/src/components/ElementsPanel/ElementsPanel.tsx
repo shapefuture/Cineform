@@ -1,34 +1,31 @@
 import React from 'react';
-import type { AnimationElement } from '@cineform-forge/shared-types';
 import styles from './ElementsPanel.module.css';
+import { useProjectStore } from '../../state/projectStore';
 
-interface ElementsPanelProps {
-  elements: AnimationElement[];
-  selectedElementId: string | null;
-  onSelectElement: (id: string) => void;
-}
+/**
+ * ElementsPanel uses global store, no props required.
+ */
+export const ElementsPanel: React.FC = () => {
+  const elements = useProjectStore(s => s.projectData?.elements || []);
+  const selectedElementId = useProjectStore(s => s.selectedElementId);
+  const setSelectedElementId = useProjectStore(s => s.setSelectedElementId);
 
-export const ElementsPanel: React.FC<ElementsPanelProps> = ({
-  elements,
-  selectedElementId,
-  onSelectElement,
-}) => {
   // Keyboard navigation handler for accessibility
   const handleKeyDown = (e: React.KeyboardEvent<HTMLUListElement>) => {
     const currentIdx = elements.findIndex((el) => el.id === selectedElementId);
     if (e.key === 'ArrowDown') {
       if (currentIdx < elements.length - 1) {
-        onSelectElement(elements[currentIdx + 1].id);
+        setSelectedElementId(elements[currentIdx + 1].id);
       }
       e.preventDefault();
     } else if (e.key === 'ArrowUp') {
       if (currentIdx > 0) {
-        onSelectElement(elements[currentIdx - 1].id);
+        setSelectedElementId(elements[currentIdx - 1].id);
       }
       e.preventDefault();
     } else if (e.key === 'Enter' || e.key === ' ') {
       if (currentIdx >= 0) {
-        onSelectElement(elements[currentIdx].id);
+        setSelectedElementId(elements[currentIdx].id);
       }
       e.preventDefault();
     }
@@ -52,7 +49,7 @@ export const ElementsPanel: React.FC<ElementsPanelProps> = ({
               ' ' +
               (el.id === selectedElementId ? styles.selected : '')
             }
-            onClick={() => onSelectElement(el.id)}
+            onClick={() => setSelectedElementId(el.id)}
             tabIndex={-1}
             aria-selected={el.id === selectedElementId}
             role="option"
