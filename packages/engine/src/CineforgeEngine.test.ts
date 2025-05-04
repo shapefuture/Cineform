@@ -25,6 +25,16 @@ describe('CineforgeEngine', () => {
     await engine.loadTimeline(timeline as any, elements as any);
     engine.setRenderingTarget('canvas2d');
     expect(spyLog).toHaveBeenCalledWith(expect.stringMatching(/setRenderingTarget/), expect.anything());
+    expect(spyLog).toHaveBeenCalledWith(expect.stringMatching(/setRenderingTarget/), { target: 'canvas2d' });
+    // Exercise canvas2d adapter paths (should not throw, logs fire)
+    engine.play();
+    engine.pause();
+    engine.seek(0.5);
+    engine.setRate(2.0);
+    engine.getPlaybackState();
+    engine.destroy();
+    expect(spyLog).toHaveBeenCalledWith(expect.stringContaining('play'), undefined);
+    expect(spyLog).toHaveBeenCalledWith(expect.stringContaining('destroy'), undefined);
   });
 
   it('should log and throw if calling loadTimeline without adapter', async () => {
