@@ -84,25 +84,107 @@ export const ElementsPanel: React.FC = () => {
     });
   };
 
+  // Local state: clipboard
+  const CLIPBOARD_KEY = 'cineformElementClipboard';
+
+  const handleCopyElement = (el: typeof elements[0]) => {
+    import('../../state/projectStore').then(({ useProjectStore }) => {
+      const projectData = useProjectStore.getState().projectData;
+      if (!projectData) return;
+      // Copy element + its sequence, if any
+      const seq =
+        projectData.timeline.sequences.find(s => s.elementId === el.id) ?? null;
+      // Save to localStorage (simulate clipboard), as JSON
+      localStorage.setItem(
+        CLIPBOARD_KEY,
+        JSON.stringify({
+          element: el,
+          sequence: seq,
+        })
+      );
+      alert('Element copied to clipboard!');
+    });
+  };
+
+  const handlePasteElement = () => {
+    import('../../state/projectStore').then(({ useProjectStore }) => {
+      const projectData = useProjectStore.getState().projectData;
+      if (!projectData) return;
+      let raw = null;
+      try {
+        raw = JSON.parse(localStorage.getItem(CLIPBOARD_KEY) || '');
+      } catch {
+        alert('Nothing to paste!');
+        return;
+      }
+      if (!raw?.element) {
+        alert('Clipboard empty or invalid!');
+        return;
+      }
+      const newid = crypto.randomUUID?.() || String(Date.now());
+      const newElement = {
+        ...raw.element,
+        id: newid,
+        name: raw.element.name + ' (copy)',
+      };
+      let newSequences = projectData.timeline.sequences;
+      if (raw.sequence) {
+        // Copy sequence for new elementId
+        newSequences = [
+          ...projectData.timeline.sequences,
+          { ...raw.sequence, elementId: newid },
+        ];
+      }
+      useProjectStore.getState().setProjectData(
+        {
+          ...projectData,
+          elements: [...projectData.elements, newElement],
+          timeline: {
+            ...projectData.timeline,
+            sequences: newSequences,
+          },
+        },
+        true
+      );
+    });
+  };
+
   return (
     <aside className={styles.elementsPanel}>
       <h3 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         Elements
-        <button
-          style={{
-            fontWeight: 700,
-            fontSize: 19,
-            padding: '0.09em 0.45em',
-            background: '#22375a',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '50%',
-            marginLeft: 6,
-            cursor: 'pointer',
-          }}
-          onClick={handleAddElement}
-          title="Add Element"
-        >＋</button>
+        <span>
+          <button
+            style={{
+              fontWeight: 700,
+              fontSize: 19,
+              padding: '0.09em 0.45em',
+              background: '#22375a',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '50%',
+              marginLeft: 6,
+              cursor: 'pointer',
+            }}
+            onClick={handleAddElement}
+            title="Add Element"
+          >＋</button>
+          <button
+            style={{
+              fontWeight: 700,
+              fontSize: 19,
+              padding: '0.09em 0.45em',
+              background: '#22ac4a',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '50%',
+              marginLeft: 6,
+              cursor: 'pointer',
+            }}
+            onClick={handlePasteElement}
+            title="Paste Element"
+          >📋</button>
+        </span>
       </h3>
       <ul
         className={styles.elementList}
@@ -128,23 +210,42 @@ export const ElementsPanel: React.FC = () => {
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
           >
             <span>{el.name} ({el.type})</span>
-            <button
-              onClick={e => {
-                e.stopPropagation();
-                handleDeleteElement(el.id);
-              }}
-              title="Delete Element"
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#ff7f7f',
-                cursor: 'pointer',
-                fontSize: 18,
-                marginLeft: 8,
-              }}
-              tabIndex={-1}
-              aria-label="Delete element"
-            >🗑️</button>
+            <span>
+              <button
+                onClick={e => {
+                  e.stopPropagation();
+                  handleCopyElement(el);
+                }}
+                title="Copy Element"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#6eff8b',
+                  cursor: 'pointer',
+                  fontSize: 18,
+                  marginLeft: 6,
+                }}
+                tabIndex={-1}
+                aria-label="Copy element"
+              >⧉</button>
+              <button
+                onClick={e => {
+                  e.stopPropagation();
+                  handleDeleteElement(el.id);
+                }}
+                title="Delete Element"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#ff7f7f',
+                  cursor: 'pointer',
+                  fontSize: 18,
+                  marginLeft: 8,
+                }}
+                tabIndex={-1}
+                aria-label="Delete element"
+              >🗑️</button>
+            </span>
           </li>
         ))}
       </ul>
