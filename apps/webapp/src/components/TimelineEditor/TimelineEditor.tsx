@@ -189,6 +189,51 @@ export const TimelineEditor: React.FC = () => {
                     );
                   });
                 };
+
+                const handleEditKeyframeTime = (e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  const val = window.prompt(
+                    'Edit keyframe time (s):',
+                    String(kf.time)
+                  );
+                  if (!val) return;
+                  const newTime = parseFloat(val);
+                  if (
+                    isNaN(newTime) ||
+                    newTime < 0 ||
+                    newTime > timelineData.duration
+                  ) {
+                    alert('Invalid time');
+                    return;
+                  }
+                  import('../../state/projectStore').then(({ useProjectStore }) => {
+                    const projectData = useProjectStore.getState().projectData;
+                    if (!projectData) return;
+                    useProjectStore.getState().setProjectData(
+                      {
+                        ...projectData,
+                        timeline: {
+                          ...projectData.timeline,
+                          sequences: projectData.timeline.sequences.map(s =>
+                            s.elementId === seq.elementId
+                              ? {
+                                  ...s,
+                                  keyframes: s.keyframes
+                                    .map((k, i) =>
+                                      i === kfIndex
+                                        ? { ...k, time: newTime }
+                                        : k
+                                    )
+                                    .sort((a, b) => a.time - b.time),
+                                }
+                              : s
+                          ),
+                        },
+                      },
+                      true
+                    );
+                  });
+                };
                 return (
                   <div
                     key={kfIndex}
@@ -217,6 +262,21 @@ export const TimelineEditor: React.FC = () => {
                       tabIndex={-1}
                       aria-label="Edit keyframe"
                     >✎</button>
+                    <button
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#c3ffb2',
+                        fontSize: 15,
+                        marginLeft: 3,
+                        cursor: 'pointer',
+                        padding: 0,
+                      }}
+                      onClick={handleEditKeyframeTime}
+                      title="Edit Keyframe Time"
+                      tabIndex={-1}
+                      aria-label="Edit keyframe time"
+                    >🕑</button>
                     <button
                       style={{
                         background: 'none',
