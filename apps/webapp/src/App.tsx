@@ -11,6 +11,8 @@ import './App.css';
 import { AISuggestionsPanel } from './components/AISuggestions/AISuggestionsPanel';
 import { SimpleFadeInTemplate } from '@cineform-forge/templates-library';
 
+import { useEffect } from 'react';
+
 function App() {
   const {
     projectData,
@@ -26,6 +28,24 @@ function App() {
     undoStack,
     redoStack,
   } = useProjectStore();
+
+  // Global undo/redo keyboard shortcuts
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      // Undo: Ctrl+Z or Cmd+Z (not Shift)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        undo();
+        e.preventDefault();
+      }
+      // Redo: Ctrl+Shift+Z or Cmd+Shift+Z
+      if ((e.ctrlKey || e.metaKey) && ((e.key === 'z' && e.shiftKey) || e.key === 'y')) {
+        redo();
+        e.preventDefault();
+      }
+    };
+    window.addEventListener('keydown', handler, { capture: true });
+    return () => window.removeEventListener('keydown', handler, { capture: true });
+  }, [undo, redo]);
 
   // Find currently selected element data
   const selectedElement =
