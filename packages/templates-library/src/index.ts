@@ -1,1 +1,2 @@
-// Entry point for @cineform-forge/templates-library
+export { SimpleFadeInTemplate } from './templates/SimpleFadeIn';
+// export { SlideUpTemplate } from './templates/SlideUp'; // Add more as needed
