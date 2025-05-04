@@ -8,8 +8,7 @@ import { PropertiesPanel } from './components/PropertiesPanel/PropertiesPanel';
 import { AIPrompt } from './components/AIPrompt/AIPrompt';
 import './App.css';
 
-// TODO: Import template, once implemented
-// import { SimpleFadeInTemplate } from '@cineform-forge/templates-library';
+import { SimpleFadeInTemplate } from '@cineform-forge/templates-library';
 
 function App() {
   const {
@@ -67,6 +66,22 @@ function App() {
     }
   };
 
+  // Helper: load template and wrap with new id/metadata
+  const loadTemplate = (template: Omit<ProjectData, 'id' | 'metadata'>) => {
+    const newProject = {
+      id: crypto.randomUUID(),
+      metadata: {
+        name: 'Loaded Template',
+        createdAt: new Date().toISOString(),
+        lastModified: new Date().toISOString(),
+      },
+      ...template,
+      schemaVersion: 1,
+    };
+    loadProject(newProject);
+    alert('Template Loaded!');
+  };
+
   return (
     <AppLayout
       header={
@@ -77,7 +92,9 @@ function App() {
             Save
           </button>
           <button onClick={handleLoad}>Load</button>
-          {/* <button onClick={() => loadTemplate(SimpleFadeInTemplate)}>Load Fade In Template</button> */}
+          <button onClick={() => loadTemplate(SimpleFadeInTemplate)}>
+            Load Fade In Template
+          </button>
           {aiError && (
             <span style={{ color: 'red', marginLeft: '10px' }}>
               AI Error: {aiError}
