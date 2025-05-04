@@ -19,6 +19,7 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ projectData }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [renderingTarget, setRenderingTarget] = useState<RenderingTarget>('dom');
   const setPlaybackState = useProjectStore(s => s.setPlaybackState);
+  const playbackState = useProjectStore(s => s.playbackState);
 
   // Instantiates engine and manages switching rendering targets.
   useEffect(() => {
@@ -99,6 +100,39 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ projectData }) => {
             <option key={opt.value} value={opt.value}>{opt.label}</option>
           ))}
         </select>
+        <div style={{ marginLeft: '2.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+          <button
+            style={{ padding: '0.2em 0.9em', fontSize: '1em' }}
+            onClick={() => engineRef.current?.play()}
+            disabled={!projectData}
+            title="Play"
+          >▶️</button>
+          <button
+            style={{ padding: '0.2em 0.8em', fontSize: '1em' }}
+            onClick={() => engineRef.current?.pause()}
+            disabled={!projectData}
+            title="Pause"
+          >⏸️</button>
+          <label style={{ marginLeft: 10, fontWeight: 500, color: '#eee' }}>
+            t:
+            <input
+              type="number"
+              value={playbackState?.currentTime?.toFixed(2) ?? '0'}
+              step="0.05"
+              min={0}
+              max={projectData?.timeline?.duration ?? 10}
+              style={{ width: 58, marginLeft: 2 }}
+              onChange={e => {
+                const time = Number(e.target.value);
+                if (!isNaN(time)) {
+                  engineRef.current?.seek(time);
+                }
+              }}
+              disabled={!projectData}
+            />
+            / {projectData?.timeline?.duration ?? '?'}s
+          </label>
+        </div>
       </div>
       <div ref={previewRef} className={styles.previewArea}>
         {isLoading && (
