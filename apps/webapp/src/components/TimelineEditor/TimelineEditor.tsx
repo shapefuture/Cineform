@@ -277,72 +277,93 @@ export const TimelineEditor: React.FC = () => {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
+                      flexDirection: 'column',
+                      whiteSpace: 'nowrap'
                     }}
                     title={`t=${kf.time}s${kf.easing ? `, easing: ${kf.easing}` : ''}`}
                   >
-                    {kfIndex + 1}
-                    <button
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: '#ffe999',
-                        fontSize: 15,
-                        marginLeft: 3,
-                        cursor: 'pointer',
-                        padding: 0,
-                      }}
-                      onClick={handleEditKeyframe}
-                      title="Edit Keyframe Properties"
-                      tabIndex={-1}
-                      aria-label="Edit keyframe"
-                    >✎</button>
-                    <button
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: '#aaf3ff',
-                        fontSize: 15,
-                        marginLeft: 3,
-                        cursor: 'pointer',
-                        padding: 0,
-                      }}
-                      onClick={handleEditEasing}
-                      title="Edit Keyframe Easing"
-                      tabIndex={-1}
-                      aria-label="Edit keyframe easing"
-                    >∿</button>
-                    <button
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: '#c3ffb2',
-                        fontSize: 15,
-                        marginLeft: 3,
-                        cursor: 'pointer',
-                        padding: 0,
-                      }}
-                      onClick={handleEditKeyframeTime}
-                      title="Edit Keyframe Time"
-                      tabIndex={-1}
-                      aria-label="Edit keyframe time"
-                    >🕑</button>
-                    <button
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: '#ff9494',
-                        fontSize: 15,
-                        marginLeft: 3,
-                        cursor: 'pointer',
-                        padding: 0,
-                      }}
-                      onClick={handleDeleteKeyframe}
-                      title="Delete Keyframe"
-                      tabIndex={-1}
-                      aria-label="Delete keyframe"
-                    >
-                      🗑️
-                    </button>
+                    <span style={{ fontWeight: 'bold', fontSize: 12, color: '#fff' }}>
+                      {kfIndex + 1}
+                    </span>
+                    {kf.easing && (
+                      <span
+                        style={{
+                          fontSize: 10,
+                          color: '#c4faff',
+                          background: '#205a76',
+                          borderRadius: 3,
+                          padding: '0 4px',
+                          margin: '1px 0 0 0',
+                        }}
+                        title={`easing: ${kf.easing}`}
+                      >
+                        ∿ {kf.easing}
+                      </span>
+                    )}
+                    <span style={{ display: 'flex', gap: 0 }}>
+                      <button
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#ffe999',
+                          fontSize: 15,
+                          marginLeft: 3,
+                          cursor: 'pointer',
+                          padding: 0,
+                        }}
+                        onClick={handleEditKeyframe}
+                        title="Edit Keyframe Properties"
+                        tabIndex={-1}
+                        aria-label="Edit keyframe"
+                      >✎</button>
+                      <button
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#aaf3ff',
+                          fontSize: 15,
+                          marginLeft: 3,
+                          cursor: 'pointer',
+                          padding: 0,
+                        }}
+                        onClick={handleEditEasing}
+                        title="Edit Keyframe Easing"
+                        tabIndex={-1}
+                        aria-label="Edit keyframe easing"
+                      >∿</button>
+                      <button
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#c3ffb2',
+                          fontSize: 15,
+                          marginLeft: 3,
+                          cursor: 'pointer',
+                          padding: 0,
+                        }}
+                        onClick={handleEditKeyframeTime}
+                        title="Edit Keyframe Time"
+                        tabIndex={-1}
+                        aria-label="Edit keyframe time"
+                      >🕑</button>
+                      <button
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#ff9494',
+                          fontSize: 15,
+                          marginLeft: 3,
+                          cursor: 'pointer',
+                          padding: 0,
+                        }}
+                        onClick={handleDeleteKeyframe}
+                        title="Delete Keyframe"
+                        tabIndex={-1}
+                        aria-label="Delete keyframe"
+                      >
+                        🗑️
+                      </button>
+                    </span>
                   </div>
                 );
               })}
