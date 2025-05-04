@@ -105,8 +105,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     }
     set({ isLoadingSuggestions: true, suggestionsError: null });
     try {
-      // @ts-expect-error: generateSuggestions possibly not defined yet
-      const response = await assistant.provider.generateSuggestions?.({
+      const response = await assistant.generateSuggestions({
         elements: projectData.elements,
         timeline: projectData.timeline,
       });
