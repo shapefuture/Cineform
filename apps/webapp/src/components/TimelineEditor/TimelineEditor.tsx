@@ -1,14 +1,10 @@
 import React, { useRef } from 'react';
-import type { TimelineData } from '@cineform-forge/shared-types';
 import { useProjectStore } from '../../state/projectStore';
+import { useTimeline } from '../../hooks/useTimeline';
 import styles from './TimelineEditor.module.css';
 
-interface TimelineEditorProps {
-  timelineData: TimelineData | null;
-}
-
-export const TimelineEditor: React.FC<TimelineEditorProps> = ({ timelineData }) => {
-  const playbackState = useProjectStore(s => s.playbackState);
+export const TimelineEditor: React.FC = () => {
+  const { timelineData, playbackState } = useTimeline();
   const seek = useProjectStore(s => s.seek);
   const setSelectedElementId = useProjectStore(s => s.setSelectedElementId);
   const selectedElementId = useProjectStore(s => s.selectedElementId);
