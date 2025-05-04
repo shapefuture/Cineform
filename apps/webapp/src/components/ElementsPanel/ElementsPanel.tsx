@@ -45,10 +45,18 @@ export const ElementsPanel: React.FC = () => {
     import('../../state/projectStore').then(({ useProjectStore }) => {
       const projectData = useProjectStore.getState().projectData;
       if (!projectData) return;
+      const newSeq = {
+        elementId: newElement.id,
+        keyframes: [],
+      };
       useProjectStore.getState().setProjectData(
         {
           ...projectData,
           elements: [...projectData.elements, newElement],
+          timeline: {
+            ...projectData.timeline,
+            sequences: [...(projectData.timeline.sequences ?? []), newSeq],
+          },
         },
         true
       );
