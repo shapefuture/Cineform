@@ -9,6 +9,85 @@ describe('AnimationAssistant', () => {
     jest.clearAllMocks();
   });
 
+  it('should initialize with missing API key and fallback to dummy (log)', () => {
+    const assistant = new AnimationAssistant('openrouter', '', {});
+    expect(assistant).toBeInstanceOf(AnimationAssistant);
+    expect(spyLog).toHaveBeenCalled();
+  });
+
+  it('should initialize with bad provider and fallback to dummy (log)', () => {
+    // @ts-expect-no-error
+    const assistant = new AnimationAssistant('notreal', '123', {});
+    expect(assistant).toBeInstanceOf(AnimationAssistant);
+    expect(spyLog).toHaveBeenCalledWith(
+      expect.stringContaining('Unsupported AI provider'),
+      expect.anything()
+    );
+  });
+
+  it('should call generateAnimationStructureFromText/return error with dummy', async () => {
+    const assistant = new AnimationAssistant('openrouter', '', {});
+    const result = await assistant.generateAnimationStructureFromText('make a horse');
+    expect(result.success).toBe(false);
+    expect(result.error).toMatch(/not configured/i);
+    expect(spyLog).toHaveBeenCalled();
+  });
+
+  it('should handle error in provider.generateAnimationStructure (log error)', async () => {
+    // Patch the provider to throw
+    class FailingProvider {
+      isDummy = false;
+      initialize() {}
+      async generateAnimationStructure() {
+        throw new Error('Simulated fail');
+      }
+      async generateSuggestions() {
+        throw new Error('unreachable');
+      }
+    }
+    const assistant: any = new AnimationAssistant('openrouter', 'apikey', {});
+    // override for test
+    assistant.provider = new FailingProvider();
+    const result = await assistant.generateAnimationStructureFromText('cause error');
+    expect(result.success).toBe(false);
+    expect(result.error).toMatch(/Simulated/);
+    expect(spyError).toHaveBeenCalled();
+  });
+
+  it('should call generateSuggestions and handle unavailable method/return error', async () => {
+    // provider with no generateSuggestions
+    class NoSuggestProvider {
+      isDummy = false;
+      initialize() {}
+      async generateAnimationStructure() { return { success: true }; }
+    }
+    const assistant: any = new AnimationAssistant('openrouter', 'apikey', {});
+    assistant.provider = new NoSuggestProvider() as any;
+    const result = await assistant.generateSuggestions({ elements: [], timeline: { duration: 1, sequences: [], version: 1 } });
+    expect(result.success).toBe(false);
+    expect(result.error).toMatch(/suggestion support/);
+  });
+
+  it('should handle errors in generateSuggestions', async () => {
+    class FailingProvider {
+      isDummy = false;
+      initialize() {}
+      async generateAnimationStructure() { return { success: true }; }
+      async generateSuggestions() { throw new Error('failSuggest'); }
+    }
+    const assistant: any = new AnimationAssistant('openrouter', 'apikey', {});
+    assistant.provider = new FailingProvider();
+    const result = await assistant.generateSuggestions({ elements: [], timeline: { duration: 1, sequences: [], version: 1 } });
+    expect(result.success).toBe(false);
+    expect(result.error).toMatch(/failSuggest/);
+    expect(spyError).toHaveBeenCalled();
+  });
+});
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('should initialize with missing API key and fallback to dummy', () => {
     // @ts-expect-no-error
     const assistant = new AnimationAssistant('openrouter', '', {});
