@@ -1,37 +1,43 @@
-import type { AnimationElement, TimelineData } from '@cineform-forge/shared-types';
+import type { AnimationElement, TimelineData, AnimationSuggestion } from '@cineform-forge/shared-types';
 
-/**
- * Parameters for AI-based animation generation.
- */
 export interface GenerateAnimationParams {
-  prompt: string;
+    prompt: string;
+    // Add other context later if needed (e.g., existing elements, desired style)
 }
 
-/**
- * AI animation generation response shape.
- */
 export interface GenerateAnimationResponse {
-  success: boolean;
-  elements?: AnimationElement[];
-  timeline?: TimelineData;
-  error?: string;
-  rawResponse?: string;
+    success: boolean;
+    elements?: AnimationElement[];
+    timeline?: TimelineData;
+    error?: string; // Error message if success is false
+    rawResponse?: string; // Optional: Include raw AI response for debugging
 }
 
-/**
- * The core AI provider interface used by any downstream providers (OpenRouter, Gemini, LocalModel, etc).
- */
-export interface IAiProvider {
-  /**
-   * Initialize the provider client with API key and any provider-specific options.
-   */
-  initialize(apiKey: string, options?: Record<string, any>): void;
-  /**
-   * Generate animation timeline and element structures from a text prompt.
-   */
-  generateAnimationStructure(
-    params: GenerateAnimationParams
-  ): Promise<GenerateAnimationResponse>;
+export interface GenerateSuggestionsParams {
+    elements: AnimationElement[];
+    timeline: TimelineData;
+}
 
-  // Add future suggestion, analysis, and model info methods here.
+export interface GenerateSuggestionsResponse {
+    success: boolean;
+    suggestions?: AnimationSuggestion[];
+    error?: string;
+}
+
+export interface GenerateSuggestionsParams {
+    elements: AnimationElement[];
+    timeline: TimelineData;
+}
+
+export interface GenerateSuggestionsResponse {
+    success: boolean;
+    suggestions?: AnimationSuggestion[];
+    error?: string;
+}
+
+export interface IAiProvider {
+    initialize(apiKey: string, options?: Record<string, any>): void;
+    generateAnimationStructure(params: GenerateAnimationParams): Promise<GenerateAnimationResponse>;
+    generateSuggestions?(params: GenerateSuggestionsParams): Promise<GenerateSuggestionsResponse>;
+    // Add other methods later like analyzePerformance etc.
 }
