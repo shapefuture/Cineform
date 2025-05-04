@@ -27,10 +27,24 @@ function App() {
     redo,
     undoStack,
     redoStack,
-  dirty,
-  setProjectData,
+    setProjectData,
     dirty,
   } = useProjectStore();
+
+  // Warn before unload if unsaved changes exist
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (dirty) {
+        e.preventDefault();
+        // eslint-disable-next-line no-param-reassign
+        e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+        return e.returnValue;
+      }
+      return undefined;
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [dirty]);
 
   // Global undo/redo keyboard shortcuts
   useEffect(() => {
