@@ -156,6 +156,50 @@ function App() {
           >
             Save
           </button>
+          <button
+            onClick={() => {
+              if (!projectData) return;
+              const url = URL.createObjectURL(
+                new Blob([JSON.stringify(projectData, null, 2)], { type: 'application/json' })
+              );
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = 'cineform-project.json';
+              document.body.appendChild(a);
+              a.click();
+              setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+              }, 100);
+            }}
+            disabled={!projectData}
+            title="Export Project (JSON)"
+          >
+            Export
+          </button>
+          <button
+            onClick={() => {
+              const inp = document.createElement('input');
+              inp.type = 'file';
+              inp.accept = '.json,application/json';
+              inp.onchange = async (event: any) => {
+                const file = event.target.files?.[0];
+                if (!file) return;
+                const text = await file.text();
+                try {
+                  const data = JSON.parse(text);
+                  if (!window.confirm('Importing will replace your current project. Continue?')) return;
+                  setProjectData(data, true /* push undo */);
+                } catch {
+                  alert('Invalid project file!');
+                }
+              };
+              inp.click();
+            }}
+            title="Import Project (JSON)"
+          >
+            Import
+          </button>
           <button onClick={handleLoad}>Load</button>
           <button onClick={() => loadTemplate(SimpleFadeInTemplate)}>
             Load Fade In Template
