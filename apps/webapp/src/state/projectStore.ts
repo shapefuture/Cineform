@@ -49,8 +49,20 @@ const createNewEmptyProject = (): ProjectData => ({
   schemaVersion: 1,
 });
 
+const LOCAL_STORAGE_KEY = 'cineformProject';
+
+function loadProjectFromStorage(): ProjectData | null {
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
 export const useProjectStore = create<ProjectState>((set, get) => ({
-  projectData: null,
+  projectData: loadProjectFromStorage(),
   selectedElementId: null,
   isLoadingAi: false,
   aiError: null,
@@ -96,6 +108,12 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       }));
     } else {
       set({ projectData: data, selectedElementId: null, aiError: null });
+    }
+    // Always persist after every projectData change
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
+    } catch (err) {
+      // ignore quota or serialization errors for MVP
     }
   },
 
