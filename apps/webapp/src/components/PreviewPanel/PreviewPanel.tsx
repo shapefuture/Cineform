@@ -20,20 +20,21 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ projectData }) => {
   const [renderingTarget, setRenderingTarget] = useState<RenderingTarget>('dom');
   const setPlaybackState = useProjectStore(s => s.setPlaybackState);
   const playbackState = useProjectStore(s => s.playbackState);
+  const attachEngine = useProjectStore(s => s.attachEngine);
+  const play = useProjectStore(s => s.play);
+  const pause = useProjectStore(s => s.pause);
+  const seek = useProjectStore(s => s.seek);
 
   // Instantiates engine and manages switching rendering targets.
   useEffect(() => {
     if (previewRef.current && !engineRef.current) {
       engineRef.current = new CineforgeEngine(previewRef.current, renderingTarget);
       engineRef.current.setPerspective('1000px');
-      // MVP workaround: expose engineRef globally so TimelineEditor can seek
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (window as any).cineforgeEngineRef = engineRef.current;
+      attachEngine(engineRef.current);
     }
     return () => {
       engineRef.current?.destroy();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if ((window as any).cineforgeEngineRef) (window as any).cineforgeEngineRef = null;
+      attachEngine(null);
       engineRef.current = null;
     };
     // Only on mount/unmount
@@ -108,13 +109,13 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ projectData }) => {
         <div style={{ marginLeft: '2.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
           <button
             style={{ padding: '0.2em 0.9em', fontSize: '1em' }}
-            onClick={() => engineRef.current?.play()}
+            onClick={() => play()}
             disabled={!projectData}
             title="Play"
           >▶️</button>
           <button
             style={{ padding: '0.2em 0.8em', fontSize: '1em' }}
-            onClick={() => engineRef.current?.pause()}
+            onClick={() => pause()}
             disabled={!projectData}
             title="Pause"
           >⏸️</button>
@@ -130,7 +131,7 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ projectData }) => {
               onChange={e => {
                 const time = Number(e.target.value);
                 if (!isNaN(time)) {
-                  engineRef.current?.seek(time);
+                  seek(time);
                 }
               }}
               disabled={!projectData}

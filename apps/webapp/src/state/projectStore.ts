@@ -26,6 +26,10 @@ interface ProjectState {
   loadProject: (data: ProjectData) => void;
   createNewProject: () => void;
   fetchSuggestions: () => Promise<void>;
+  attachEngine: (engine: any) => void;
+  play: () => void;
+  pause: () => void;
+  seek: (time: number) => void;
 }
 
 const createNewEmptyProject = (): ProjectData => ({
@@ -50,6 +54,28 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   isLoadingSuggestions: false,
   suggestionsError: null,
   playbackState: null,
+
+  _engine: null, // Not part of public type, just "attached" instance
+
+  attachEngine: (engine: any) => {
+    set((state) => {
+      (state as any)._engine = engine;
+      return {};
+    });
+  },
+
+  play: () => {
+    const s = get() as any;
+    s._engine?.play && s._engine.play();
+  },
+  pause: () => {
+    const s = get() as any;
+    s._engine?.pause && s._engine.pause();
+  },
+  seek: (time: number) => {
+    const s = get() as any;
+    s._engine?.seek && s._engine.seek(time);
+  },
 
   setProjectData: (data) =>
     set({ projectData: data, selectedElementId: null, aiError: null }),

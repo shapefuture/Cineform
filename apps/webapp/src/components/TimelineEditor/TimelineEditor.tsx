@@ -9,18 +9,8 @@ interface TimelineEditorProps {
 
 export const TimelineEditor: React.FC<TimelineEditorProps> = ({ timelineData }) => {
   const playbackState = useProjectStore(s => s.playbackState);
-  const setPlaybackState = useProjectStore(s => s.setPlaybackState);
+  const seek = useProjectStore(s => s.seek);
   const previewPanelRef = useRef<HTMLDivElement | null>(null);
-
-  // get engineRef indirectly via playbackState updates
-  const seekTo = (time: number) => {
-    // Use custom event for seeking
-    // The PreviewPanel provides engineRef.current in global scope for now (MVP workaround)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((window as any).cineforgeEngineRef && typeof (window as any).cineforgeEngineRef.seek === 'function') {
-      (window as any).cineforgeEngineRef.seek(time);
-    }
-  };
 
   if (!timelineData) {
     return <div className={styles.timelineEditor}>No timeline data.</div>;
@@ -30,7 +20,6 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({ timelineData }) 
     ? Math.min(100, Math.max(0, (playbackState.currentTime / timelineData.duration) * 100))
     : 0;
 
-  // onClick handler for timeline track area
   const handleTimelineClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     const target = e.currentTarget;
     const rect = target.getBoundingClientRect();
@@ -38,7 +27,7 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({ timelineData }) 
     const percent = Math.min(1, Math.max(0, x / rect.width));
     if (timelineData.duration > 0) {
       const newTime = Math.round(percent * timelineData.duration * 100) / 100;
-      seekTo(newTime);
+      seek(newTime);
     }
   };
 
