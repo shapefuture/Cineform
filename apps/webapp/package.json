@@ -5,7 +5,8 @@
   "type": "module",
   "main": "dist/index.js",
   "dependencies": {
-    "@cineform-forge/shared-types": "workspace:*"
+    "@cineform-forge/shared-types": "workspace:*",
+    "@cineform-forge/templates-library": "workspace:*"
   },
   "scripts": {
     "dev": "vite",
