@@ -21,6 +21,10 @@ function App() {
     generateAnimation,
     loadProject,
     createNewProject,
+    undo,
+    redo,
+    undoStack,
+    redoStack,
   } = useProjectStore();
 
   // Find currently selected element data
@@ -95,6 +99,21 @@ function App() {
           <button onClick={handleLoad}>Load</button>
           <button onClick={() => loadTemplate(SimpleFadeInTemplate)}>
             Load Fade In Template
+          </button>
+          <button
+            onClick={undo}
+            disabled={undoStack.length === 0}
+            title="Undo (Ctrl+Z)"
+            style={{ marginLeft: 15 }}
+          >
+            ⎌ Undo
+          </button>
+          <button
+            onClick={redo}
+            disabled={redoStack.length === 0}
+            title="Redo (Ctrl+Shift+Z)"
+          >
+            ↻ Redo
           </button>
           {aiError && (
             <span style={{ color: 'red', marginLeft: '10px' }}>
