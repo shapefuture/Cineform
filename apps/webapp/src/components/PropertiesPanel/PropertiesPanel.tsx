@@ -1,14 +1,10 @@
 import React from 'react';
-import type { AnimationElement } from '@cineform-forge/shared-types';
 import styles from './PropertiesPanel.module.css';
+import { useSelectedElement } from '../../hooks/useSelectedElement';
 
-interface PropertiesPanelProps {
-  selectedElement: AnimationElement | null;
-}
+export const PropertiesPanel: React.FC = () => {
+  const selectedElement = useSelectedElement();
 
-export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
-  selectedElement,
-}) => {
   if (!selectedElement) {
     return (
       <aside className={styles.propertiesPanel}>
