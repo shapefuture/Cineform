@@ -19,7 +19,32 @@ At the monorepo root:
 - `npm run test` – Runs all tests
 - `npm run lint` – Lints codebase
 
-## Core APIs
+## Core Editing Workflows
+
+All editing, timeline, and engine state flows are powered by a unified global Zustand store (see `projectStore.ts`).
+
+### Supported User Editing Patterns:
+
+- **Add Element:**  
+  Use the "＋" button in ElementsPanel to add a new animation element to the project. A corresponding empty animation sequence is added.
+- **Remove Element:**  
+  Click the 🗑️ next to an element in ElementsPanel to remove it and its timeline sequence.
+- **Edit Properties:**  
+  Select an element, edit its properties in PropertiesPanel; updates push to undo/redo.
+- **Add Keyframe:**  
+  Hit "＋" on a timeline sequence to add a keyframe at a time you specify.
+- **Delete Keyframe:**  
+  Click 🗑️ on a keyframe bubble to remove it from the sequence.
+- **Edit Keyframe Properties:**  
+  Click ✎ on a keyframe to edit its properties object as JSON.
+- **Edit Keyframe Time:**  
+  Use 🕑 on a keyframe to move it in time.
+- **Edit Keyframe Easing:**  
+  Use ∿ on a keyframe to set/change its easing string.
+- **Playback/Preview:**  
+  Use the playback controls in PreviewPanel to play, pause, or seek through your animation.
+- **Undo/Redo:**  
+  Use undo ⎌/redo ↻ buttons or keyboard shortcuts (Ctrl+Z/Ctrl+Shift+Z) for full history navigation of project state.
 
 ### CineforgeEngine (Engine API)
 
@@ -49,6 +74,7 @@ useProjectStore().undo(), useProjectStore().redo()
 useProjectStore().play(), pause(), seek(time)
 useProjectStore().generateAnimation(prompt)
 useProjectStore().fetchSuggestions()
+useProjectStore().setProjectData(newData, true) // For undo history
 ```
 
 ## Development conventions
