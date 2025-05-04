@@ -1,0 +1,7 @@
+.aiPromptForm {
+  display: flex;
+  flex-direction: row;
+  gap: 0.4rem;
+  padding: 0.5rem;
+  align-items: center;
+}

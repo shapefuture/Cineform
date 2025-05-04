@@ -1,0 +1,9 @@
+.previewPanel {
+  width: 100%;
+  height: 400px;
+  background: #181818;
+  border: 1px solid #353535;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+}

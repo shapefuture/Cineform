@@ -1,0 +1,7 @@
+.elementsPanel {
+  width: 250px;
+  background: #23243a;
+  border-right: 1px solid #353535;
+  min-height: 100%;
+  padding: 0.75rem;
+}

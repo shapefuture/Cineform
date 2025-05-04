@@ -1,0 +1,40 @@
+.appLayout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #13141b;
+}
+
+.header {
+  background: #191a20;
+  color: #fff;
+  padding: 0.75rem 1.2rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  border-bottom: 1px solid #262730;
+}
+
+.mainContent {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.leftPanel {
+  flex: none;
+}
+
+.mainPanel {
+  flex: 1;
+  position: relative;
+}
+
+.rightPanel {
+  flex: none;
+}
+
+.bottomPanel {
+  border-top: 1px solid #23232f;
+  background: #171822;
+  padding: 0.25rem 1rem;
+}
