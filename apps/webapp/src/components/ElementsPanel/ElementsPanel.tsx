@@ -31,9 +31,65 @@ export const ElementsPanel: React.FC = () => {
     }
   };
 
+  // Add element handler
+  const handleAddElement = () => {
+    const newId = crypto.randomUUID?.() || String(Date.now());
+    const name = window.prompt('Element name?', 'New Box');
+    if (!name) return;
+    const newElement = {
+      id: newId,
+      type: 'shape',
+      name,
+      initialProps: { x: 30, y: 30, width: 50, height: 50, backgroundColor: '#22c', opacity: 1 },
+    };
+    import('../../state/projectStore').then(({ useProjectStore }) => {
+      const projectData = useProjectStore.getState().projectData;
+      if (!projectData) return;
+      useProjectStore.getState().setProjectData(
+        {
+          ...projectData,
+          elements: [...projectData.elements, newElement],
+        },
+        true
+      );
+    });
+  };
+
+  const handleDeleteElement = (id: string) => {
+    if (!window.confirm('Delete this element?')) return;
+    import('../../state/projectStore').then(({ useProjectStore }) => {
+      const projectData = useProjectStore.getState().projectData;
+      if (!projectData) return;
+      useProjectStore.getState().setProjectData(
+        {
+          ...projectData,
+          elements: projectData.elements.filter(e => e.id !== id),
+        },
+        true
+      );
+    });
+  };
+
   return (
     <aside className={styles.elementsPanel}>
-      <h3>Elements</h3>
+      <h3 style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        Elements
+        <button
+          style={{
+            fontWeight: 700,
+            fontSize: 19,
+            padding: '0.09em 0.45em',
+            background: '#22375a',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '50%',
+            marginLeft: 6,
+            cursor: 'pointer',
+          }}
+          onClick={handleAddElement}
+          title="Add Element"
+        >＋</button>
+      </h3>
       <ul
         className={styles.elementList}
         tabIndex={0}
@@ -55,8 +111,26 @@ export const ElementsPanel: React.FC = () => {
             role="option"
             aria-posinset={idx + 1}
             aria-setsize={elements.length}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
           >
-            {el.name} ({el.type})
+            <span>{el.name} ({el.type})</span>
+            <button
+              onClick={e => {
+                e.stopPropagation();
+                handleDeleteElement(el.id);
+              }}
+              title="Delete Element"
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#ff7f7f',
+                cursor: 'pointer',
+                fontSize: 18,
+                marginLeft: 8,
+              }}
+              tabIndex={-1}
+              aria-label="Delete element"
+            >🗑️</button>
           </li>
         ))}
       </ul>
