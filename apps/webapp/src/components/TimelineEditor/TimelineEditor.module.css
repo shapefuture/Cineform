@@ -40,7 +40,7 @@
   top: 2px;
   width: 16px;
   height: 16px;
-  margin-left: -8px; /* Center on time */
+  margin-left: -8px;
   background: #59aefe;
   border: 2px solid #122055;
   border-radius: 50%;
@@ -52,10 +52,17 @@
   color: #fff;
   cursor: pointer;
   z-index: 1;
-  transition: box-shadow 0.1s;
+  transition: box-shadow 0.1s, background 0.1s, border 0.1s;
 }
 .keyframe:hover {
   box-shadow: 0 0 7px #77c6fd, 0 0 1px #fff;
+}
+
+.keyframeSelected {
+  background: #ffe066 !important;
+  color: #2c2332 !important;
+  border: 2.2px solid #372;
+  box-shadow: 0 0 7px #ffed84, 0 0 1.5px #fff;
 }
 
 .timelineTrack {

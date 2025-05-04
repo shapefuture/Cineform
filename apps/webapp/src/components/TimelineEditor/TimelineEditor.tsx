@@ -268,10 +268,14 @@ export const TimelineEditor: React.FC = () => {
                   });
                 };
 
+                const isSelected = seq.elementId === selectedElementId;
                 return (
                   <div
                     key={kfIndex}
-                    className={styles.keyframe}
+                    className={
+                      styles.keyframe +
+                      (isSelected ? ' ' + styles.keyframeSelected : '')
+                    }
                     style={{
                       left: `${(kf.time / timelineData.duration) * 100}%`,
                       display: 'flex',
