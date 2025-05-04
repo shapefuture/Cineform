@@ -149,6 +149,46 @@ export const TimelineEditor: React.FC = () => {
                     );
                   });
                 };
+                const handleEditKeyframe = (e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  const val = window.prompt(
+                    'Edit keyframe properties as JSON:',
+                    JSON.stringify(kf.properties, null, 2)
+                  );
+                  if (!val) return;
+                  let parsed: Record<string, any> | null = null;
+                  try {
+                    parsed = JSON.parse(val);
+                  } catch {
+                    alert('Invalid JSON');
+                    return;
+                  }
+                  import('../../state/projectStore').then(({ useProjectStore }) => {
+                    const projectData = useProjectStore.getState().projectData;
+                    if (!projectData) return;
+                    useProjectStore.getState().setProjectData(
+                      {
+                        ...projectData,
+                        timeline: {
+                          ...projectData.timeline,
+                          sequences: projectData.timeline.sequences.map(s =>
+                            s.elementId === seq.elementId
+                              ? {
+                                  ...s,
+                                  keyframes: s.keyframes.map((k, i) =>
+                                    i === kfIndex
+                                      ? { ...k, properties: parsed! }
+                                      : k
+                                  ),
+                                }
+                              : s
+                          ),
+                        },
+                      },
+                      true
+                    );
+                  });
+                };
                 return (
                   <div
                     key={kfIndex}
@@ -162,6 +202,21 @@ export const TimelineEditor: React.FC = () => {
                     title={`t=${kf.time}s`}
                   >
                     {kfIndex + 1}
+                    <button
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#ffe999',
+                        fontSize: 15,
+                        marginLeft: 3,
+                        cursor: 'pointer',
+                        padding: 0,
+                      }}
+                      onClick={handleEditKeyframe}
+                      title="Edit Keyframe Properties"
+                      tabIndex={-1}
+                      aria-label="Edit keyframe"
+                    >✎</button>
                     <button
                       style={{
                         background: 'none',
