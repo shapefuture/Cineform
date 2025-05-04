@@ -150,7 +150,7 @@ function App() {
         />
       }
       mainPanel={<PreviewPanel projectData={projectData} />}
-      rightPanel={<PropertiesPanel selectedElement={selectedElement} />}
+      rightPanel={<PropertiesPanel />}
       bottomPanel={
         <>
           <AIPrompt onSubmitPrompt={generateAnimation} isLoading={isLoadingAi} />
