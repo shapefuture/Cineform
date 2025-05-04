@@ -1,8 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { CineforgeEngine, type RenderingTarget } from '@cineform-forge/engine';
-import type { ProjectData } from '@cineform-forge/shared-types';
 import styles from './PreviewPanel.module.css';
-import { useProjectStore } from '../../state/projectStore';
+import { useProjectStore } from '../../state/projectStore'; from '../../state/projectStore';
 
 interface PreviewPanelProps {
   projectData: ProjectData | null;
@@ -13,7 +12,8 @@ const RENDERING_OPTIONS: { value: RenderingTarget; label: string }[] = [
   { value: 'canvas2d', label: 'Canvas 2D' },
 ];
 
-export const PreviewPanel: React.FC<PreviewPanelProps> = ({ projectData }) => {
+export const PreviewPanel: React.FC = () => {
+  const projectData = useProjectStore(s => s.projectData);
   const previewRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<CineforgeEngine | null>(null);
   const [isLoading, setIsLoading] = useState(false);
