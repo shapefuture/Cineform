@@ -49,39 +49,96 @@ export const TimelineEditor: React.FC = () => {
           mixBlendMode: 'screen',
         }}
       />
-      {timelineData.sequences.map((seq, index) => (
-        <div
-          key={index}
-          className={styles.sequence}
-          style={{
-            background: seq.elementId === selectedElementId ? '#273273' : undefined,
-            borderRadius: seq.elementId === selectedElementId ? 6 : undefined,
-            cursor: 'pointer'
-          }}
-          onClick={() => setSelectedElementId(seq.elementId)}
-        >
-          <span>Element: {seq.elementId}</span>
-          <div className={styles.keyframes}>
-            <div
-              className={styles.timelineTrack}
-              style={{ cursor: 'pointer' }}
-              onClick={handleTimelineClick}
-            />
-            {seq.keyframes.map((kf, kfIndex) => (
-              <div
-                key={kfIndex}
-                className={styles.keyframe}
+      {timelineData.sequences.map((seq, index) => {
+        // Add keyframe logic
+        const handleAddKeyframe = (e: React.MouseEvent) => {
+          e.stopPropagation();
+          const t = window.prompt('Keyframe time (s)?', '0');
+          if (!t) return;
+          const time = parseFloat(t);
+          if (isNaN(time) || time < 0 || time > timelineData.duration) {
+            alert('Invalid time.');
+            return;
+          }
+          import('../../state/projectStore').then(({ useProjectStore }) => {
+            const projectData = useProjectStore.getState().projectData;
+            if (!projectData) return;
+            useProjectStore.getState().setProjectData(
+              {
+                ...projectData,
+                timeline: {
+                  ...projectData.timeline,
+                  sequences: projectData.timeline.sequences.map(s =>
+                    s.elementId === seq.elementId
+                      ? {
+                          ...s,
+                          keyframes: [
+                            ...s.keyframes,
+                            { time, properties: {} },
+                          ].sort((a, b) => a.time - b.time),
+                        }
+                      : s
+                  ),
+                },
+              },
+              true
+            );
+          });
+        };
+
+        return (
+          <div
+            key={index}
+            className={styles.sequence}
+            style={{
+              background: seq.elementId === selectedElementId ? '#273273' : undefined,
+              borderRadius: seq.elementId === selectedElementId ? 6 : undefined,
+              cursor: 'pointer'
+            }}
+            onClick={() => setSelectedElementId(seq.elementId)}
+          >
+            <span>
+              Element: {seq.elementId}
+              <button
                 style={{
-                  left: `${(kf.time / timelineData.duration) * 100}%`,
+                  marginLeft: 8,
+                  fontSize: 16,
+                  fontWeight: 700,
+                  borderRadius: 16,
+                  border: 'none',
+                  background: '#277cee',
+                  color: '#fff',
+                  padding: '0.12em 0.72em',
+                  cursor: 'pointer',
                 }}
-                title={`t=${kf.time}s`}
+                title="Add Keyframe"
+                onClick={handleAddKeyframe}
               >
-                {kfIndex + 1}
-              </div>
-            ))}
+                ＋
+              </button>
+            </span>
+            <div className={styles.keyframes}>
+              <div
+                className={styles.timelineTrack}
+                style={{ cursor: 'pointer' }}
+                onClick={handleTimelineClick}
+              />
+              {seq.keyframes.map((kf, kfIndex) => (
+                <div
+                  key={kfIndex}
+                  className={styles.keyframe}
+                  style={{
+                    left: `${(kf.time / timelineData.duration) * 100}%`,
+                  }}
+                  title={`t=${kf.time}s`}
+                >
+                  {kfIndex + 1}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };
