@@ -26,9 +26,14 @@ export const PreviewPanel: React.FC<PreviewPanelProps> = ({ projectData }) => {
     if (previewRef.current && !engineRef.current) {
       engineRef.current = new CineforgeEngine(previewRef.current, renderingTarget);
       engineRef.current.setPerspective('1000px');
+      // MVP workaround: expose engineRef globally so TimelineEditor can seek
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).cineforgeEngineRef = engineRef.current;
     }
     return () => {
       engineRef.current?.destroy();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((window as any).cineforgeEngineRef) (window as any).cineforgeEngineRef = null;
       engineRef.current = null;
     };
     // Only on mount/unmount
