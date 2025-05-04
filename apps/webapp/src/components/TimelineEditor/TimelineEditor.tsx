@@ -123,18 +123,65 @@ export const TimelineEditor: React.FC = () => {
                 style={{ cursor: 'pointer' }}
                 onClick={handleTimelineClick}
               />
-              {seq.keyframes.map((kf, kfIndex) => (
-                <div
-                  key={kfIndex}
-                  className={styles.keyframe}
-                  style={{
-                    left: `${(kf.time / timelineData.duration) * 100}%`,
-                  }}
-                  title={`t=${kf.time}s`}
-                >
-                  {kfIndex + 1}
-                </div>
-              ))}
+              {seq.keyframes.map((kf, kfIndex) => {
+                const handleDeleteKeyframe = (e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  if (!window.confirm('Delete this keyframe?')) return;
+                  import('../../state/projectStore').then(({ useProjectStore }) => {
+                    const projectData = useProjectStore.getState().projectData;
+                    if (!projectData) return;
+                    useProjectStore.getState().setProjectData(
+                      {
+                        ...projectData,
+                        timeline: {
+                          ...projectData.timeline,
+                          sequences: projectData.timeline.sequences.map(s =>
+                            s.elementId === seq.elementId
+                              ? {
+                                  ...s,
+                                  keyframes: s.keyframes.filter((_, i) => i !== kfIndex),
+                                }
+                              : s
+                          ),
+                        },
+                      },
+                      true
+                    );
+                  });
+                };
+                return (
+                  <div
+                    key={kfIndex}
+                    className={styles.keyframe}
+                    style={{
+                      left: `${(kf.time / timelineData.duration) * 100}%`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                    title={`t=${kf.time}s`}
+                  >
+                    {kfIndex + 1}
+                    <button
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#ff9494',
+                        fontSize: 15,
+                        marginLeft: 3,
+                        cursor: 'pointer',
+                        padding: 0,
+                      }}
+                      onClick={handleDeleteKeyframe}
+                      title="Delete Keyframe"
+                      tabIndex={-1}
+                      aria-label="Delete keyframe"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </div>
         );
