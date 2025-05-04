@@ -12,141 +12,182 @@ export const ElementsPanel: React.FC = () => {
 
   // Keyboard navigation handler for accessibility
   const handleKeyDown = (e: React.KeyboardEvent<HTMLUListElement>) => {
-    const currentIdx = elements.findIndex((el) => el.id === selectedElementId);
-    if (e.key === 'ArrowDown') {
-      if (currentIdx < elements.length - 1) {
-        setSelectedElementId(elements[currentIdx + 1].id);
+    try {
+      // eslint-disable-next-line no-console
+      console.log('[ElementsPanel] handleKeyDown', e.key);
+      const currentIdx = elements.findIndex((el) => el.id === selectedElementId);
+      if (e.key === 'ArrowDown') {
+        if (currentIdx < elements.length - 1) {
+          setSelectedElementId(elements[currentIdx + 1].id);
+        }
+        e.preventDefault();
+      } else if (e.key === 'ArrowUp') {
+        if (currentIdx > 0) {
+          setSelectedElementId(elements[currentIdx - 1].id);
+        }
+        e.preventDefault();
+      } else if (e.key === 'Enter' || e.key === ' ') {
+        if (currentIdx >= 0) {
+          setSelectedElementId(elements[currentIdx].id);
+        }
+        e.preventDefault();
       }
-      e.preventDefault();
-    } else if (e.key === 'ArrowUp') {
-      if (currentIdx > 0) {
-        setSelectedElementId(elements[currentIdx - 1].id);
-      }
-      e.preventDefault();
-    } else if (e.key === 'Enter' || e.key === ' ') {
-      if (currentIdx >= 0) {
-        setSelectedElementId(elements[currentIdx].id);
-      }
-      e.preventDefault();
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[ElementsPanel] Error in handleKeyDown', err);
     }
   };
 
   // Add element handler
   const handleAddElement = () => {
-    const newId = crypto.randomUUID?.() || String(Date.now());
-    const name = window.prompt('Element name?', 'New Box');
-    if (!name) return;
-    const newElement = {
-      id: newId,
-      type: 'shape',
-      name,
-      initialProps: { x: 30, y: 30, width: 50, height: 50, backgroundColor: '#22c', opacity: 1 },
-    };
-    import('../../state/projectStore').then(({ useProjectStore }) => {
-      const projectData = useProjectStore.getState().projectData;
-      if (!projectData) return;
-      const newSeq = {
-        elementId: newElement.id,
-        keyframes: [],
+    try {
+      const newId = crypto.randomUUID?.() || String(Date.now());
+      const name = window.prompt('Element name?', 'New Box');
+      if (!name) return;
+      const newElement = {
+        id: newId,
+        type: 'shape',
+        name,
+        initialProps: { x: 30, y: 30, width: 50, height: 50, backgroundColor: '#22c', opacity: 1 },
       };
-      useProjectStore.getState().setProjectData(
-        {
-          ...projectData,
-          elements: [...projectData.elements, newElement],
-          timeline: {
-            ...projectData.timeline,
-            sequences: [...(projectData.timeline.sequences ?? []), newSeq],
+      import('../../state/projectStore').then(({ useProjectStore }) => {
+        const projectData = useProjectStore.getState().projectData;
+        if (!projectData) return;
+        const newSeq = {
+          elementId: newElement.id,
+          keyframes: [],
+        };
+        useProjectStore.getState().setProjectData(
+          {
+            ...projectData,
+            elements: [...projectData.elements, newElement],
+            timeline: {
+              ...projectData.timeline,
+              sequences: [...(projectData.timeline.sequences ?? []), newSeq],
+            },
           },
-        },
-        true
-      );
-    });
+          true
+        );
+        // eslint-disable-next-line no-console
+        console.log('[ElementsPanel] Added element', newElement);
+      });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[ElementsPanel] Error in handleAddElement', err);
+    }
   };
 
   const handleDeleteElement = (id: string) => {
-    if (!window.confirm('Delete this element?')) return;
-    import('../../state/projectStore').then(({ useProjectStore }) => {
-      const projectData = useProjectStore.getState().projectData;
-      if (!projectData) return;
-      useProjectStore.getState().setProjectData(
-        {
-          ...projectData,
-          elements: projectData.elements.filter(e => e.id !== id),
-          timeline: {
-            ...projectData.timeline,
-            sequences: projectData.timeline.sequences.filter(
-              seq => seq.elementId !== id
-            ),
+    try {
+      // eslint-disable-next-line no-console
+      console.log('[ElementsPanel] handleDeleteElement', id);
+      if (!window.confirm('Delete this element?')) return;
+      import('../../state/projectStore').then(({ useProjectStore }) => {
+        const projectData = useProjectStore.getState().projectData;
+        if (!projectData) return;
+        useProjectStore.getState().setProjectData(
+          {
+            ...projectData,
+            elements: projectData.elements.filter(e => e.id !== id),
+            timeline: {
+              ...projectData.timeline,
+              sequences: projectData.timeline.sequences.filter(
+                seq => seq.elementId !== id
+              ),
+            },
           },
-        },
-        true
-      );
-    });
+          true
+        );
+        // eslint-disable-next-line no-console
+        console.log('[ElementsPanel] Deleted element', id);
+      });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[ElementsPanel] Error in handleDeleteElement', err);
+    }
   };
 
   // Local state: clipboard
   const CLIPBOARD_KEY = 'cineformElementClipboard';
 
   const handleCopyElement = (el: typeof elements[0]) => {
-    import('../../state/projectStore').then(({ useProjectStore }) => {
-      const projectData = useProjectStore.getState().projectData;
-      if (!projectData) return;
-      // Copy element + its sequence, if any
-      const seq =
-        projectData.timeline.sequences.find(s => s.elementId === el.id) ?? null;
-      // Save to localStorage (simulate clipboard), as JSON
-      localStorage.setItem(
-        CLIPBOARD_KEY,
-        JSON.stringify({
-          element: el,
-          sequence: seq,
-        })
-      );
-      alert('Element copied to clipboard!');
-    });
+    try {
+      import('../../state/projectStore').then(({ useProjectStore }) => {
+        const projectData = useProjectStore.getState().projectData;
+        if (!projectData) return;
+        // Copy element + its sequence, if any
+        const seq =
+          projectData.timeline.sequences.find(s => s.elementId === el.id) ?? null;
+        // Save to localStorage (simulate clipboard), as JSON
+        localStorage.setItem(
+          CLIPBOARD_KEY,
+          JSON.stringify({
+            element: el,
+            sequence: seq,
+          })
+        );
+        // eslint-disable-next-line no-console
+        console.log('[ElementsPanel] Copied element to clipboard', el.id);
+        alert('Element copied to clipboard!');
+      });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[ElementsPanel] Error in handleCopyElement', err, el);
+    }
   };
 
   const handlePasteElement = () => {
-    import('../../state/projectStore').then(({ useProjectStore }) => {
-      const projectData = useProjectStore.getState().projectData;
-      if (!projectData) return;
-      let raw = null;
-      try {
-        raw = JSON.parse(localStorage.getItem(CLIPBOARD_KEY) || '');
-      } catch {
-        alert('Nothing to paste!');
-        return;
-      }
-      if (!raw?.element) {
-        alert('Clipboard empty or invalid!');
-        return;
-      }
-      const newid = crypto.randomUUID?.() || String(Date.now());
-      const newElement = {
-        ...raw.element,
-        id: newid,
-        name: raw.element.name + ' (copy)',
-      };
-      let newSequences = projectData.timeline.sequences;
-      if (raw.sequence) {
-        // Copy sequence for new elementId
-        newSequences = [
-          ...projectData.timeline.sequences,
-          { ...raw.sequence, elementId: newid },
-        ];
-      }
-      useProjectStore.getState().setProjectData(
-        {
-          ...projectData,
-          elements: [...projectData.elements, newElement],
-          timeline: {
-            ...projectData.timeline,
-            sequences: newSequences,
+    try {
+      import('../../state/projectStore').then(({ useProjectStore }) => {
+        const projectData = useProjectStore.getState().projectData;
+        if (!projectData) return;
+        let raw = null;
+        try {
+          raw = JSON.parse(localStorage.getItem(CLIPBOARD_KEY) || '');
+        } catch {
+          alert('Nothing to paste!');
+          // eslint-disable-next-line no-console
+          console.warn('[ElementsPanel] Clipboard parse failed');
+          return;
+        }
+        if (!raw?.element) {
+          alert('Clipboard empty or invalid!');
+          // eslint-disable-next-line no-console
+          console.warn('[ElementsPanel] Clipboard empty or invalid');
+          return;
+        }
+        const newid = crypto.randomUUID?.() || String(Date.now());
+        const newElement = {
+          ...raw.element,
+          id: newid,
+          name: raw.element.name + ' (copy)',
+        };
+        let newSequences = projectData.timeline.sequences;
+        if (raw.sequence) {
+          // Copy sequence for new elementId
+          newSequences = [
+            ...projectData.timeline.sequences,
+            { ...raw.sequence, elementId: newid },
+          ];
+        }
+        useProjectStore.getState().setProjectData(
+          {
+            ...projectData,
+            elements: [...projectData.elements, newElement],
+            timeline: {
+              ...projectData.timeline,
+              sequences: newSequences,
+            },
           },
-        },
-        true
-      );
-    });
+          true
+        );
+        // eslint-disable-next-line no-console
+        console.log('[ElementsPanel] Pasted element from clipboard', newElement);
+      });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[ElementsPanel] Error in handlePasteElement', err);
+    }
   };
 
   return (
