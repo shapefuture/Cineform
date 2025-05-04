@@ -28,6 +28,8 @@ function App() {
     undoStack,
     redoStack,
   dirty,
+  setProjectData,
+    dirty,
   } = useProjectStore();
 
   // Global undo/redo keyboard shortcuts
@@ -130,7 +132,14 @@ function App() {
             )}
           </h1>
           <button onClick={createNewProject}>New</button>
-          <button onClick={handleSave} disabled={!projectData}>
+          <button
+            onClick={() => {
+              if (!projectData) return;
+              setProjectData(projectData, false); // true/false: don't push to undo
+            }}
+            disabled={!dirty}
+            title={dirty ? "Save current project" : "All changes saved"}
+          >
             Save
           </button>
           <button onClick={handleLoad}>Load</button>
