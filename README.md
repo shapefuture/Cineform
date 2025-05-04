@@ -1,46 +1,43 @@
-# Cineform Forge Monorepo
+# Cineform Forge
 
-**Cineform Forge** is a modular, modern animation editor and engine, powered by TypeScript, TurboRepo, and AI features for smarter animation workflows.
+_Cineform Forge_ is a modern, collaborative, AI-assisted browser animation editor with a monorepo architecture supporting robust, modular, and extensible development.
 
-## Project Structure
+## Overview
 
-- `apps/webapp/` – Main React app frontend
-- `packages/engine/` – Core animation engine (supports DOM/GSAP and Canvas2D adapters)
-- `packages/ai-assistant/` – Pluggable AI provider and abstraction (OpenRouter, more soon)
-- `packages/shared-types/` – Shared interfaces and data types
-- `packages/templates-library/` – Animation/project templates
-- `packages/testing-utils/` – (Optional/future) Shared test helpers
-
-## Developer Experience
-
-- Managed with Turborepo: use `npm run build`, `npm run test`, `npm run dev --filter webapp`
-- End-to-end type safety and automatic test/lint enforcement via root scripts
-- Easily plug in AI (OpenRouter) for animation generation and optimization
-- CI powered by GitHub Actions, ready for PR validation
+- **Monorepo:** Managed via workspaces, with all apps and packages in `apps/` and `packages/`
+- **Editor:** Timeline-based, WYSIWYG, in-browser, with undo/redo and AI animation suggestion/creation
+- **Persistence:** Autosave, explicit save, import/export (JSON), and copy/paste for elements/timelines
+- **Core packages:**  
+  - `@cineform-forge/engine`: rendering/playback  
+  - `@cineform-forge/shared-types`: types  
+  - `@cineform-forge/ai-assistant`: LLM integration  
+  - `@cineform-forge/templates-library`: starter templates  
+  - `@cineform-forge/testing-utils`: for testing
+  - `apps/webapp`: main React UI
 
 ## Quick Start
 
 ```sh
-# Install
 npm install
-
-# Build all packages/apps
-npm run build
-
-# Run tests
-npm run test
-
-# Develop webapp (with hot reload)
 npm run dev --filter webapp
 ```
 
-## Key Features
+- Visit http://localhost:5173 (or the printed local address)
+- All edits autosave and persist to your browser
+- Export/Import project files via the UI
 
-- GSAP and Canvas2D rendering in engine, runtime switchable
-- Timeline, elements, and properties editing in the webapp
-- AI-assisted animation creation and improvement
-- Modular monorepo, ready for expansion (WebGL, SVG, exporter, etc.)
+## Dev & Scripts
+
+- `npm run build` – Build all packages and apps
+- `npm run test` – Run the full Jest/Testing Library suite
+- `npm run lint` – Lint all files
+- `npm run typecheck` – TypeScript validation everywhere
+
+## Key Documentation
+- [Developer Guide](./docs/DEVELOPER_GUIDE.md)
+- [Shared Types Reference](./docs/SHARED_TYPES.md)
+- [Success Criteria](./docs/SUCCESS_CRITERIA_V1.md)
 
 ---
 
-© Cineform Forge Authors
+All contributions are welcome—see docs for guidelines and architecture!
