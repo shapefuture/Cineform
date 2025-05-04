@@ -45,6 +45,16 @@ All editing, timeline, and engine state flows are powered by a unified global Zu
   Use the playback controls in PreviewPanel to play, pause, or seek through your animation.
 - **Undo/Redo:**  
   Use undo ⎌/redo ↻ buttons or keyboard shortcuts (Ctrl+Z/Ctrl+Shift+Z) for full history navigation of project state.
+- **Copy/Paste Elements:**  
+  Copy individual elements with the ⧉ button and paste with 📋 in ElementsPanel, duplicating both the element and its timeline if present.
+- **Save and Autosave:**  
+  All project changes are auto-saved to localStorage; click **Save** to force persist and dismiss the unsaved badge.
+- **Import/Export:**  
+  Export your project to JSON, or import a JSON project file from disk—resetting the undo stack and dirty state.
+- **Dirty Unsaved Indicator:**  
+  An "unsaved" badge signals that your project in memory differs from what's stored.
+- **Leave Warning:**  
+  If you have unsaved changes, closing/reloading the tab warns you to prevent accidental loss.
 
 ### CineforgeEngine (Engine API)
 
