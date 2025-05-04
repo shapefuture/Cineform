@@ -189,7 +189,8 @@ function App() {
                 try {
                   const data = JSON.parse(text);
                   if (!window.confirm('Importing will replace your current project. Continue?')) return;
-                  setProjectData(data, true /* push undo */);
+                  // Reset dirty state: import with no undo stack push, then mark as clean
+                  setProjectData(data, false /* don't push undo */);
                 } catch {
                   alert('Invalid project file!');
                 }
