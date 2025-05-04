@@ -18,8 +18,13 @@ interface ProjectState {
   isLoadingSuggestions: boolean;
   suggestionsError: string | null;
   playbackState: PlaybackState | null;
+  undoStack: ProjectData[];
+  redoStack: ProjectData[];
 
-  setProjectData: (data: ProjectData | null) => void;
+  setProjectData: (data: ProjectData | null, pushToUndo?: boolean) => void;
+  undo: () => void;
+  redo: () => void;
+
   setSelectedElementId: (id: string | null) => void;
   setPlaybackState: (ps: PlaybackState) => void;
   generateAnimation: (prompt: string) => Promise<void>;
@@ -54,8 +59,10 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   isLoadingSuggestions: false,
   suggestionsError: null,
   playbackState: null,
+  undoStack: [],
+  redoStack: [],
 
-  _engine: null, // Not part of public type, just "attached" instance
+  _engine: null,
 
   attachEngine: (engine: any) => {
     set((state) => {
@@ -77,8 +84,42 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     s._engine?.seek && s._engine.seek(time);
   },
 
-  setProjectData: (data) =>
-    set({ projectData: data, selectedElementId: null, aiError: null }),
+  setProjectData: (data, pushToUndo = true) => {
+    const prev = get().projectData;
+    if (pushToUndo && prev) {
+      set(state => ({
+        projectData: data,
+        undoStack: [...state.undoStack, prev],
+        redoStack: [],
+        selectedElementId: null,
+        aiError: null,
+      }));
+    } else {
+      set({ projectData: data, selectedElementId: null, aiError: null });
+    }
+  },
+
+  undo: () => {
+    const { undoStack, projectData, redoStack } = get();
+    if (undoStack.length > 0 && projectData) {
+      set({
+        projectData: undoStack[undoStack.length - 1],
+        undoStack: undoStack.slice(0, -1),
+        redoStack: [...redoStack, projectData]
+      });
+    }
+  },
+
+  redo: () => {
+    const { redoStack, projectData, undoStack } = get();
+    if (redoStack.length > 0 && projectData) {
+      set({
+        projectData: redoStack[redoStack.length - 1],
+        redoStack: redoStack.slice(0, -1),
+        undoStack: [...undoStack, projectData]
+      });
+    }
+  },
 
   setSelectedElementId: (id) => set({ selectedElementId: id }),
 
