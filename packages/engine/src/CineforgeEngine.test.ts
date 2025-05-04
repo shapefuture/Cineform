@@ -1,19 +1,67 @@
 import { CineforgeEngine } from './CineforgeEngine';
-import type { PlaybackState } from './types/PlaybackState';
 
-const mockAdapter = () => ({
-  init: jest.fn(),
-  destroy: jest.fn(),
-  loadTimeline: jest.fn().mockResolvedValue(undefined),
-  renderStaticElement: jest.fn(),
-  play: jest.fn(),
-  pause: jest.fn(),
-  seek: jest.fn(),
-  setRate: jest.fn(),
-  getPlaybackState: jest.fn().mockReturnValue({ currentTime: 0, progress: 0, isPlaying: false, rate: 1, duration: 2 } as PlaybackState),
-  on: jest.fn(),
-  off: jest.fn(),
-  setPerspective: jest.fn()
+describe('CineforgeEngine', () => {
+  const spyLog = jest.spyOn(console, 'log').mockImplementation(() => {});
+  const spyError = jest.spyOn(console, 'error').mockImplementation(() => {});
+  let div: HTMLDivElement;
+
+  beforeEach(() => {
+    div = document.createElement('div');
+    jest.clearAllMocks();
+  });
+
+  it('can instantiate and destroy', () => {
+    const engine = new CineforgeEngine(div, 'dom');
+    expect(engine).toBeInstanceOf(CineforgeEngine);
+    engine.destroy();
+    expect(spyLog).toHaveBeenCalledWith(expect.stringMatching(/destroy/), expect.anything());
+  });
+
+  it('should switch adapters with setRenderingTarget and reload timeline', async () => {
+    const engine = new CineforgeEngine(div, 'dom');
+    // Fake data
+    const timeline = { duration: 1, sequences: [], version: 1 };
+    const elements = [{ id: '1', type: 'shape', name: 'test', initialProps: {} }];
+    await engine.loadTimeline(timeline as any, elements as any);
+    engine.setRenderingTarget('canvas2d');
+    expect(spyLog).toHaveBeenCalledWith(expect.stringMatching(/setRenderingTarget/), expect.anything());
+  });
+
+  it('should log and throw if calling loadTimeline without adapter', async () => {
+    const engine = new CineforgeEngine(null, 'dom') as any;
+    engine.adapter = null;
+    await expect(engine.loadTimeline({} as any, []))
+      .rejects.toThrow(/not initialized/);
+    expect(spyError).toHaveBeenCalled();
+  });
+
+  it('should log and handle errors in play, pause, seek, setRate', () => {
+    const engine = new CineforgeEngine(div, 'dom');
+    // Purposely break adapter to throw
+    (engine as any).adapter = { play: () => { throw new Error('failPlay'); }, pause: () => { throw new Error('failPause'); }, seek: () => { throw new Error('failSeek'); }, setRate: () => { throw new Error('failSetRate'); }, getPlaybackState: () => { throw new Error('failGet'); } };
+    expect(() => engine.play()).not.toThrow();
+    expect(() => engine.pause()).not.toThrow();
+    expect(() => engine.seek(1)).not.toThrow();
+    expect(() => engine.setRate(1)).not.toThrow();
+    expect(() => engine.getPlaybackState()).not.toThrow();
+    expect(spyError).toHaveBeenCalled();
+  });
+
+  it('should log on event hook/unhook', () => {
+    const engine = new CineforgeEngine(div, 'dom');
+    (engine as any).adapter = { on: jest.fn(), off: jest.fn() };
+    engine.on('update' as any, () => {});
+    engine.off('update' as any, () => {});
+    expect(spyLog).toHaveBeenCalledWith(expect.stringContaining('on'), expect.anything());
+    expect(spyLog).toHaveBeenCalledWith(expect.stringContaining('off'), expect.anything());
+  });
+
+  it('should handle destroy falling through on an error', () => {
+    const engine = new CineforgeEngine(div, 'dom');
+    (engine as any).adapter = { destroy: () => { throw new Error('failDestroy'); } };
+    expect(() => engine.destroy()).not.toThrow();
+    expect(spyError).toHaveBeenCalledWith(expect.stringContaining('destroy error'), expect.anything());
+  });
 });
 
 jest.mock('./adapters/gsap/GSAPAdapter', () => ({
