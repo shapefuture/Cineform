@@ -72,6 +72,12 @@ export const ElementsPanel: React.FC = () => {
         {
           ...projectData,
           elements: projectData.elements.filter(e => e.id !== id),
+          timeline: {
+            ...projectData.timeline,
+            sequences: projectData.timeline.sequences.filter(
+              seq => seq.elementId !== id
+            ),
+          },
         },
         true
       );
