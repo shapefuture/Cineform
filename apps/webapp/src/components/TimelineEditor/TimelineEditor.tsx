@@ -10,6 +10,8 @@ interface TimelineEditorProps {
 export const TimelineEditor: React.FC<TimelineEditorProps> = ({ timelineData }) => {
   const playbackState = useProjectStore(s => s.playbackState);
   const seek = useProjectStore(s => s.seek);
+  const setSelectedElementId = useProjectStore(s => s.setSelectedElementId);
+  const selectedElementId = useProjectStore(s => s.selectedElementId);
   const previewPanelRef = useRef<HTMLDivElement | null>(null);
 
   if (!timelineData) {
@@ -52,7 +54,16 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({ timelineData }) 
         }}
       />
       {timelineData.sequences.map((seq, index) => (
-        <div key={index} className={styles.sequence}>
+        <div
+          key={index}
+          className={styles.sequence}
+          style={{
+            background: seq.elementId === selectedElementId ? '#273273' : undefined,
+            borderRadius: seq.elementId === selectedElementId ? 6 : undefined,
+            cursor: 'pointer'
+          }}
+          onClick={() => setSelectedElementId(seq.elementId)}
+        >
           <span>Element: {seq.elementId}</span>
           <div className={styles.keyframes}>
             <div
