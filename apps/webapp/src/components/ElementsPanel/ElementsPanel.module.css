@@ -5,3 +5,32 @@
   min-height: 100%;
   padding: 0.75rem;
 }
+
+.elementList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.elementListItem {
+  padding: 7px 13px;
+  cursor: pointer;
+  border-radius: 6px;
+  margin: 2px 0;
+  color: #d8ebfa;
+  font-size: 1em;
+  background: none;
+  border: none;
+  transition: background 0.1s;
+}
+
+.elementListItem:hover {
+  background: #262d44;
+  color: #ffe;
+}
+
+.selected {
+  background: #4065c7;
+  color: #fff;
+  font-weight: bold;
+}
