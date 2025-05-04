@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { ProjectData, AnimationElement, TimelineData } from '@cineform-forge/shared-types';
+import type { ProjectData, AnimationElement, TimelineData, AnimationSuggestion } from '@cineform-forge/shared-types';
 import { AnimationAssistant } from '@cineform-forge/ai-assistant';
 import type { GenerateAnimationResponse } from '@cineform-forge/ai-assistant';
 
@@ -12,12 +12,16 @@ interface ProjectState {
   isLoadingAi: boolean;
   aiError: string | null;
   assistant: AnimationAssistant;
+  suggestions: AnimationSuggestion[];
+  isLoadingSuggestions: boolean;
+  suggestionsError: string | null;
 
   setProjectData: (data: ProjectData | null) => void;
   setSelectedElementId: (id: string | null) => void;
   generateAnimation: (prompt: string) => Promise<void>;
   loadProject: (data: ProjectData) => void;
   createNewProject: () => void;
+  fetchSuggestions: () => Promise<void>;
 }
 
 const createNewEmptyProject = (): ProjectData => ({
@@ -38,6 +42,9 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   isLoadingAi: false,
   aiError: null,
   assistant: new AnimationAssistant('openrouter', apiKey || '', { model: 'openai/gpt-4o-mini' }),
+  suggestions: [],
+  isLoadingSuggestions: false,
+  suggestionsError: null,
 
   setProjectData: (data) =>
     set({ projectData: data, selectedElementId: null, aiError: null }),
@@ -88,5 +95,36 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
   createNewProject: () => {
     set({ projectData: createNewEmptyProject(), selectedElementId: null, aiError: null });
+  },
+
+  fetchSuggestions: async () => {
+    const { assistant, projectData } = get();
+    if (!assistant || !projectData) {
+      set({ suggestionsError: 'No project loaded.', suggestions: [] });
+      return;
+    }
+    set({ isLoadingSuggestions: true, suggestionsError: null });
+    try {
+      // @ts-expect-error: generateSuggestions possibly not defined yet
+      const response = await assistant.provider.generateSuggestions?.({
+        elements: projectData.elements,
+        timeline: projectData.timeline,
+      });
+      if (response && response.success && response.suggestions) {
+        set({ suggestions: response.suggestions, isLoadingSuggestions: false });
+      } else {
+        set({
+          suggestionsError: response?.error ?? 'AI did not return suggestions.',
+          suggestions: [],
+          isLoadingSuggestions: false,
+        });
+      }
+    } catch (err: any) {
+      set({
+        suggestions: [],
+        isLoadingSuggestions: false,
+        suggestionsError: `Suggestion error: ${err.message}`,
+      });
+    }
   },
 }));

@@ -8,6 +8,7 @@ import { PropertiesPanel } from './components/PropertiesPanel/PropertiesPanel';
 import { AIPrompt } from './components/AIPrompt/AIPrompt';
 import './App.css';
 
+import { AISuggestionsPanel } from './components/AISuggestions/AISuggestionsPanel';
 import { SimpleFadeInTemplate } from '@cineform-forge/templates-library';
 
 function App() {
@@ -115,6 +116,7 @@ function App() {
         <>
           <AIPrompt onSubmitPrompt={generateAnimation} isLoading={isLoadingAi} />
           <TimelineEditor timelineData={projectData?.timeline ?? null} />
+          <AISuggestionsPanel />
         </>
       }
     />
