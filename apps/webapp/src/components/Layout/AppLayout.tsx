@@ -16,6 +16,16 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   rightPanel,
   bottomPanel,
 }) => {
+  // eslint-disable-next-line no-console
+  console.log('[AppLayout] Rendering', {
+    header: !!header,
+    leftPanel: !!leftPanel,
+    mainPanel: !!mainPanel,
+    rightPanel: !!rightPanel,
+    bottomPanel: !!bottomPanel,
+  });
+  if (!header) console.warn('[AppLayout] No header');
+  if (!mainPanel) console.warn('[AppLayout] No mainPanel');
   return (
     <div className={styles.appLayout}>
       {header && <header className={styles.header}>{header}</header>}
