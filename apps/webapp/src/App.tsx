@@ -34,13 +34,20 @@ function App() {
   // Warn before unload if unsaved changes exist
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (dirty) {
-        e.preventDefault();
-        // eslint-disable-next-line no-param-reassign
-        e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
-        return e.returnValue;
+      try {
+        // eslint-disable-next-line no-console
+        console.log('[App] beforeunload', { dirty });
+        if (dirty) {
+          e.preventDefault();
+          // eslint-disable-next-line no-param-reassign
+          e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+          return e.returnValue;
+        }
+        return undefined;
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('[App] Error in beforeunload', err);
       }
-      return undefined;
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
@@ -49,15 +56,22 @@ function App() {
   // Global undo/redo keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      // Undo: Ctrl+Z or Cmd+Z (not Shift)
-      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
-        undo();
-        e.preventDefault();
-      }
-      // Redo: Ctrl+Shift+Z or Cmd+Shift+Z
-      if ((e.ctrlKey || e.metaKey) && ((e.key === 'z' && e.shiftKey) || e.key === 'y')) {
-        redo();
-        e.preventDefault();
+      try {
+        // eslint-disable-next-line no-console
+        console.log('[App] keydown', { key: e.key, ctrl: e.ctrlKey, meta: e.metaKey, shift: e.shiftKey });
+        // Undo: Ctrl+Z or Cmd+Z (not Shift)
+        if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+          undo();
+          e.preventDefault();
+        }
+        // Redo: Ctrl+Shift+Z or Cmd+Shift+Z
+        if ((e.ctrlKey || e.metaKey) && ((e.key === 'z' && e.shiftKey) || e.key === 'y')) {
+          redo();
+          e.preventDefault();
+        }
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('[App] Error in keydown handler', err);
       }
     };
     window.addEventListener('keydown', handler, { capture: true });
@@ -85,43 +99,70 @@ function App() {
   // };
 
   const handleSave = () => {
-    if (projectData) {
-      localStorage.setItem('cineformProject', JSON.stringify(projectData));
-      alert('Project Saved!');
+    try {
+      if (projectData) {
+        localStorage.setItem('cineformProject', JSON.stringify(projectData));
+        // eslint-disable-next-line no-console
+        console.log('[App] Project Saved', projectData);
+        alert('Project Saved!');
+      }
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[App] Error saving project', err);
+      alert('Error saving project!');
     }
   };
 
   const handleLoad = () => {
-    const savedData = localStorage.getItem('cineformProject');
-    if (savedData) {
-      try {
-        const parsedData = JSON.parse(savedData);
-        // TODO: Validate loaded data
-        loadProject(parsedData);
-        alert('Project Loaded!');
-      } catch (e) {
-        alert('Failed to load project.');
-        console.error('Error loading project from localStorage:', e);
+    try {
+      const savedData = localStorage.getItem('cineformProject');
+      if (savedData) {
+        try {
+          const parsedData = JSON.parse(savedData);
+          // TODO: Validate loaded data
+          loadProject(parsedData);
+          // eslint-disable-next-line no-console
+          console.log('[App] Project Loaded', parsedData);
+          alert('Project Loaded!');
+        } catch (e) {
+          alert('Failed to load project.');
+          // eslint-disable-next-line no-console
+          console.error('[App] Error loading project from localStorage:', e);
+        }
+      } else {
+        alert('No saved project found.');
+        // eslint-disable-next-line no-console
+        console.warn('[App] No saved project found');
       }
-    } else {
-      alert('No saved project found.');
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[App] Error in handleLoad', err);
+      alert('Error loading project!');
     }
   };
 
   // Helper: load template and wrap with new id/metadata
   const loadTemplate = (template: Omit<ProjectData, 'id' | 'metadata'>) => {
-    const newProject = {
-      id: crypto.randomUUID(),
-      metadata: {
-        name: 'Loaded Template',
-        createdAt: new Date().toISOString(),
-        lastModified: new Date().toISOString(),
-      },
-      ...template,
-      schemaVersion: 1,
-    };
-    loadProject(newProject);
-    alert('Template Loaded!');
+    try {
+      const newProject = {
+        id: crypto.randomUUID(),
+        metadata: {
+          name: 'Loaded Template',
+          createdAt: new Date().toISOString(),
+          lastModified: new Date().toISOString(),
+        },
+        ...template,
+        schemaVersion: 1,
+      };
+      loadProject(newProject);
+      // eslint-disable-next-line no-console
+      console.log('[App] Template Loaded', newProject);
+      alert('Template Loaded!');
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[App] Error in loadTemplate', err);
+      alert('Error loading template!');
+    }
   };
 
   return (
@@ -148,8 +189,16 @@ function App() {
           <button onClick={createNewProject}>New</button>
           <button
             onClick={() => {
-              if (!projectData) return;
-              setProjectData(projectData, false); // true/false: don't push to undo
+              try {
+                if (!projectData) return;
+                setProjectData(projectData, false); // true/false: don't push to undo
+                // eslint-disable-next-line no-console
+                console.log('[App] Save button clicked');
+              } catch (err) {
+                // eslint-disable-next-line no-console
+                console.error('[App] Error in Save button', err);
+                alert('Error saving project!');
+              }
             }}
             disabled={!dirty}
             title={dirty ? "Save current project" : "All changes saved"}
@@ -158,19 +207,27 @@ function App() {
           </button>
           <button
             onClick={() => {
-              if (!projectData) return;
-              const url = URL.createObjectURL(
-                new Blob([JSON.stringify(projectData, null, 2)], { type: 'application/json' })
-              );
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = 'cineform-project.json';
-              document.body.appendChild(a);
-              a.click();
-              setTimeout(() => {
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-              }, 100);
+              try {
+                if (!projectData) return;
+                const url = URL.createObjectURL(
+                  new Blob([JSON.stringify(projectData, null, 2)], { type: 'application/json' })
+                );
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'cineform-project.json';
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                }, 100);
+                // eslint-disable-next-line no-console
+                console.log('[App] Exported project');
+              } catch (err) {
+                // eslint-disable-next-line no-console
+                console.error('[App] Error exporting project', err);
+                alert('Error exporting project!');
+              }
             }}
             disabled={!projectData}
             title="Export Project (JSON)"
@@ -179,23 +236,38 @@ function App() {
           </button>
           <button
             onClick={() => {
-              const inp = document.createElement('input');
-              inp.type = 'file';
-              inp.accept = '.json,application/json';
-              inp.onchange = async (event: any) => {
-                const file = event.target.files?.[0];
-                if (!file) return;
-                const text = await file.text();
-                try {
-                  const data = JSON.parse(text);
-                  if (!window.confirm('Importing will replace your current project. Continue?')) return;
-                  // Reset dirty state: import with no undo stack push, then mark as clean
-                  setProjectData(data, false /* don't push undo */);
-                } catch {
-                  alert('Invalid project file!');
-                }
-              };
-              inp.click();
+              try {
+                const inp = document.createElement('input');
+                inp.type = 'file';
+                inp.accept = '.json,application/json';
+                inp.onchange = async (event: any) => {
+                  try {
+                    const file = event.target.files?.[0];
+                    if (!file) return;
+                    const text = await file.text();
+                    try {
+                      const data = JSON.parse(text);
+                      if (!window.confirm('Importing will replace your current project. Continue?')) return;
+                      setProjectData(data, false /* don't push undo */);
+                      // eslint-disable-next-line no-console
+                      console.log('[App] Imported project', data);
+                    } catch {
+                      alert('Invalid project file!');
+                      // eslint-disable-next-line no-console
+                      console.warn('[App] Invalid project file');
+                    }
+                  } catch (err) {
+                    // eslint-disable-next-line no-console
+                    console.error('[App] Error reading import file', err);
+                    alert('Error importing project!');
+                  }
+                };
+                inp.click();
+              } catch (err) {
+                // eslint-disable-next-line no-console
+                console.error('[App] Error in Import button', err);
+                alert('Error importing project!');
+              }
             }}
             title="Import Project (JSON)"
           >
