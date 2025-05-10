@@ -1,53 +1,45 @@
-// Root ESLint configuration for Cineform Forge Monorepo
 module.exports = {
   root: true,
+  env: { browser: true, node: true, es2021: true, jest: true },
   parser: '@typescript-eslint/parser',
-  plugins: [
-    '@typescript-eslint',
-    'react',
-    'react-hooks',
-  ],
+  plugins: ['@typescript-eslint', 'jest'],
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
-    'plugin:react/recommended',
-    'plugin:react/jsx-runtime',
-    'plugin:react-hooks/recommended',
-    'prettier',
+    'plugin:jest/recommended',
+    'plugin:prettier/recommended'
   ],
-  settings: {
-    react: {
-      version: 'detect',
-    },
-  },
-  env: {
-    browser: true,
-    node: true,
-    es2021: true,
-  },
-  parserOptions: {
-    ecmaFeatures: {
-      jsx: true,
-    },
-    ecmaVersion: 12,
-    sourceType: 'module',
-    project: [
-      './tsconfig.json',
-      './packages/*/tsconfig.json',
-      './apps/*/tsconfig.json'
-    ],
-  },
   rules: {
-    'react/prop-types': 'off',
-    '@typescript-eslint/no-unused-vars': ['warn', { 'argsIgnorePattern': '^_' }],
+    // Strict type safety
+    '@typescript-eslint/no-explicit-any': 'error',
+    '@typescript-eslint/explicit-function-return-type': ['error', { allowExpressions: false }],
+    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    '@typescript-eslint/strict-boolean-expressions': 'error',
+    'no-console': [
+      'error',
+      { allow: ['log', 'warn', 'error'] }
+    ],
+    'eqeqeq': 'error',
+    'no-var': 'error',
+    'prefer-const': 'error',
+    'no-implicit-coercion': 'error',
+    'no-duplicate-imports': 'error',
+    'no-undef': 'error',
+
+    // Jest testing rules
+    'jest/no-disabled-tests': 'warn',
+    'jest/no-focused-tests': 'error',
+    'jest/no-identical-title': 'error',
+    'jest/prefer-to-have-length': 'warn',
+    'jest/valid-expect': 'error'
   },
-  ignorePatterns: [
-    'node_modules/',
-    'dist/',
-    'build/',
-    '.turbo/',
-    'coverage/',
-    '*.js',
-    'vite.config.ts',
-  ],
+  overrides: [
+    {
+      files: ['*.ts', '*.tsx'],
+      parserOptions: {
+        project: ['./tsconfig.json'],
+        tsconfigRootDir: __dirname
+      }
+    }
+  ]
 };
