@@ -26,37 +26,53 @@ export const PropertiesPanel: React.FC = () => {
               value={value}
               type={typeof value === 'number' ? 'number' : 'text'}
               onChange={e => {
-                // Mutable editing: update this element only
-                const newVal =
-                  typeof value === 'number'
-                    ? parseFloat(e.target.value)
-                    : e.target.value;
-                // Read project state and patch
-                // Find element in elements, replace its initialProps
-                import('../../state/projectStore').then(({ useProjectStore }) => {
-                  const projectData = useProjectStore
-                    .getState()
-                    .projectData;
-                  if (!projectData) return;
-                  const newElements = projectData.elements.map(el =>
-                    el.id === selectedElement.id
-                      ? {
-                          ...el,
-                          initialProps: {
-                            ...el.initialProps,
-                            [key]: newVal,
-                          },
-                        }
-                      : el
-                  );
-                  // Push with undo support
-                  useProjectStore
-                    .getState()
-                    .setProjectData(
-                      { ...projectData, elements: newElements },
-                      true
-                    );
-                });
+                try {
+                  // eslint-disable-next-line no-console
+                  console.log('[PropertiesPanel] property change', { key, value, element: selectedElement.id });
+                  const newVal =
+                    typeof value === 'number'
+                      ? parseFloat(e.target.value)
+                      : e.target.value;
+                  if (typeof value === 'number' && isNaN(newVal)) {
+                    // eslint-disable-next-line no-console
+                    console.error('[PropertiesPanel] Invalid number input', e.target.value);
+                    return;
+                  }
+                  import('../../state/projectStore').then(({ useProjectStore }) => {
+                    try {
+                      const projectData = useProjectStore
+                        .getState()
+                        .projectData;
+                      if (!projectData) return;
+                      const newElements = projectData.elements.map(el =>
+                        el.id === selectedElement.id
+                          ? {
+                              ...el,
+                              initialProps: {
+                                ...el.initialProps,
+                                [key]: newVal,
+                              },
+                            }
+                          : el
+                      );
+                      // Push with undo support
+                      useProjectStore
+                        .getState()
+                        .setProjectData(
+                          { ...projectData, elements: newElements },
+                          true
+                        );
+                      // eslint-disable-next-line no-console
+                      console.log('[PropertiesPanel] setProjectData', { id: selectedElement.id, key, newVal });
+                    } catch (err) {
+                      // eslint-disable-next-line no-console
+                      console.error('[PropertiesPanel] Error in projectStore.setProjectData', err);
+                    }
+                  });
+                } catch (err) {
+                  // eslint-disable-next-line no-console
+                  console.error('[PropertiesPanel] Error in input change', err);
+                }
               }}
               style={{
                 flex: 1,
