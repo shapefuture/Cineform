@@ -9,9 +9,24 @@ interface AIPromptProps {
 export const AIPrompt: React.FC<AIPromptProps> = ({ onSubmitPrompt, isLoading }) => {
   const [prompt, setPrompt] = useState('');
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (prompt.trim() && !isLoading) {
-      onSubmitPrompt(prompt.trim());
+    try {
+      e.preventDefault();
+      // eslint-disable-next-line no-console
+      console.log('[AIPrompt] handleSubmit', { prompt, isLoading });
+      if (prompt.trim() && !isLoading) {
+        try {
+          onSubmitPrompt(prompt.trim());
+          // eslint-disable-next-line no-console
+          console.log('[AIPrompt] onSubmitPrompt called', prompt.trim());
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.error('[AIPrompt] Error in onSubmitPrompt', err);
+          alert('Failed to submit prompt: ' + (err as Error)?.message);
+        }
+      }
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[AIPrompt] Error in handleSubmit', err);
     }
   };
   return (
@@ -19,7 +34,11 @@ export const AIPrompt: React.FC<AIPromptProps> = ({ onSubmitPrompt, isLoading })
       <input
         type="text"
         value={prompt}
-        onChange={(e) => setPrompt(e.target.value)}
+        onChange={(e) => {
+          // eslint-disable-next-line no-console
+          console.log('[AIPrompt] input change', e.target.value);
+          setPrompt(e.target.value);
+        }}
         placeholder="Describe the animation..."
         disabled={isLoading}
         className={styles.promptInput}
