@@ -1,0 +1,22 @@
+{
+  "name": "@cineform-forge/engine",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc -w",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext .ts",
+    "clean": "rm -rf dist node_modules",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@cineform-forge/shared-types": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "@types/node": "^20.12.12"
+  }
+}

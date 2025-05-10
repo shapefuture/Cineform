@@ -1,0 +1,41 @@
+.previewPanel {
+  width: 100%;
+  height: 400px;
+  background: #181818;
+  border: 1px solid #353535;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.previewHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #171820;
+  border-bottom: 1px solid #292931;
+  padding: 4px 12px;
+  font-size: 0.95rem;
+}
+
+.previewArea {
+  width: 100%;
+  height: calc(100% - 34px);
+  position: relative;
+  background: transparent;
+}
+
+.loadingOverlay {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 5;
+  background: rgba(0,0,0,0.18);
+  color: #eaf9ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
