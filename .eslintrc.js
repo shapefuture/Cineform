@@ -10,7 +10,6 @@ module.exports = {
     'plugin:prettier/recommended'
   ],
   rules: {
-    // Strict type safety
     '@typescript-eslint/no-explicit-any': 'error',
     '@typescript-eslint/explicit-function-return-type': ['error', { allowExpressions: false }],
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
@@ -25,8 +24,18 @@ module.exports = {
     'no-implicit-coercion': 'error',
     'no-duplicate-imports': 'error',
     'no-undef': 'error',
+    'no-empty-function': 'error',
+    'no-async-promise-executor': 'error',
+    'no-constant-condition': 'error',
+    'no-extra-boolean-cast': 'error',
+    'no-template-curly-in-string': 'error',
+    'no-unreachable': 'error',
+    'prefer-arrow-callback': 'error',
+    'prefer-rest-params': 'error',
+    'prefer-spread': 'error',
+    'prefer-template': 'error',
 
-    // Jest testing rules
+    // Jest
     'jest/no-disabled-tests': 'warn',
     'jest/no-focused-tests': 'error',
     'jest/no-identical-title': 'error',
