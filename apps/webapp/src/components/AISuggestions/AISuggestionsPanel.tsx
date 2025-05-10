@@ -19,39 +19,63 @@ export const AISuggestionsPanel: React.FC = () => {
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
         <strong>AI Suggestions</strong>
-        <button onClick={() => fetchSuggestions()} disabled={isLoadingSuggestions}>
+        <button
+          onClick={() => {
+            try {
+              // eslint-disable-next-line no-console
+              console.log('[AISuggestionsPanel] Fetch Suggestions button clicked');
+              fetchSuggestions();
+            } catch (err) {
+              // eslint-disable-next-line no-console
+              console.error('[AISuggestionsPanel] Error in fetchSuggestions', err);
+            }
+          }}
+          disabled={isLoadingSuggestions}
+        >
           {isLoadingSuggestions ? 'Loading...' : 'Get Suggestions'}
         </button>
       </div>
       {suggestionsError && (
-        <div style={{ color: '#f99', margin: '0.7em 0' }}>{suggestionsError}</div>
+        <div style={{ color: '#f99', margin: '0.7em 0' }}>
+          {/* eslint-disable-next-line no-console */}
+          {console.log('[AISuggestionsPanel] suggestionsError:', suggestionsError)}
+          {suggestionsError}
+        </div>
       )}
       {suggestions.length === 0 && !isLoadingSuggestions && (
-        <div style={{ color: '#888', marginTop: 12 }}>No suggestions yet.</div>
+        <div style={{ color: '#888', marginTop: 12 }}>
+          {/* eslint-disable-next-line no-console */}
+          {console.log('[AISuggestionsPanel] No suggestions.')}
+          No suggestions yet.
+        </div>
       )}
       <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-        {suggestions.map((s, i) => (
-          <li key={i} style={{
-            background: '#223050',
-            borderRadius: '5px',
-            margin: '6px 0',
-            padding: '0.7em 0.9em',
-            color: '#cae1ff'
-          }}>
-            <span style={{
-              fontWeight: 600,
-              color: '#adebff',
-              borderBottom: '1px dashed #466bf7',
-              marginRight: '0.8em'
+        {suggestions.map((s, i) => {
+          // eslint-disable-next-line no-console
+          console.log('[AISuggestionsPanel] suggestion', s);
+          return (
+            <li key={i} style={{
+              background: '#223050',
+              borderRadius: '5px',
+              margin: '6px 0',
+              padding: '0.7em 0.9em',
+              color: '#cae1ff'
             }}>
-              [{s.type}]
-            </span>
-            {s.suggestion}
-            <div style={{ fontSize: '0.88em', color: '#8e9dc7', marginTop: 4 }}>
-              {s.reasoning}
-            </div>
-          </li>
-        ))}
+              <span style={{
+                fontWeight: 600,
+                color: '#adebff',
+                borderBottom: '1px dashed #466bf7',
+                marginRight: '0.8em'
+              }}>
+                [{s.type}]
+              </span>
+              {s.suggestion}
+              <div style={{ fontSize: '0.88em', color: '#8e9dc7', marginTop: 4 }}>
+                {s.reasoning}
+              </div>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
