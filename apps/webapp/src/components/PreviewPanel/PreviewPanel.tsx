@@ -27,15 +27,31 @@ export const PreviewPanel: React.FC = () => {
 
   // Instantiates engine and manages switching rendering targets.
   useEffect(() => {
-    if (previewRef.current && !engineRef.current) {
-      engineRef.current = new CineforgeEngine(previewRef.current, renderingTarget);
-      engineRef.current.setPerspective('1000px');
-      attachEngine(engineRef.current);
+    try {
+      // eslint-disable-next-line no-console
+      console.log('[PreviewPanel] mount');
+      if (previewRef.current && !engineRef.current) {
+        engineRef.current = new CineforgeEngine(previewRef.current, renderingTarget);
+        engineRef.current.setPerspective('1000px');
+        attachEngine(engineRef.current);
+        // eslint-disable-next-line no-console
+        console.log('[PreviewPanel] Engine created/attached', engineRef.current);
+      }
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[PreviewPanel] Error in mount', err);
     }
     return () => {
-      engineRef.current?.destroy();
-      attachEngine(null);
-      engineRef.current = null;
+      try {
+        engineRef.current?.destroy();
+        attachEngine(null);
+        engineRef.current = null;
+        // eslint-disable-next-line no-console
+        console.log('[PreviewPanel] Engine destroyed');
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('[PreviewPanel] Error in unmount', err);
+      }
     };
     // Only on mount/unmount
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -43,8 +59,17 @@ export const PreviewPanel: React.FC = () => {
 
   // Switch backend if renderingTarget changes
   useEffect(() => {
-    if (engineRef.current && previewRef.current) {
-      engineRef.current.setRenderingTarget(renderingTarget);
+    try {
+      // eslint-disable-next-line no-console
+      console.log('[PreviewPanel] renderingTarget changed', renderingTarget);
+      if (engineRef.current && previewRef.current) {
+        engineRef.current.setRenderingTarget(renderingTarget);
+        // eslint-disable-next-line no-console
+        console.log('[PreviewPanel] setRenderingTarget called', renderingTarget);
+      }
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[PreviewPanel] Error switching renderingTarget', err);
     }
     // Reload projectData (if any)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -53,41 +78,66 @@ export const PreviewPanel: React.FC = () => {
   // Listen for playback updates and set playbackState in store
   useEffect(() => {
     if (!engineRef.current) return;
+    // eslint-disable-next-line no-console
+    console.log('[PreviewPanel] hook playback listeners');
     const updatePlayback = () => {
-      const state = engineRef.current?.getPlaybackState();
-      if (state) setPlaybackState(state);
+      try {
+        const state = engineRef.current?.getPlaybackState();
+        if (state) setPlaybackState(state);
+        // eslint-disable-next-line no-console
+        console.log('[PreviewPanel] playback update', state);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('[PreviewPanel] Error in updatePlayback', err);
+      }
     };
     engineRef.current.on('update', updatePlayback);
     engineRef.current.on('start', updatePlayback);
     engineRef.current.on('complete', updatePlayback);
     return () => {
-      engineRef.current?.off('update', updatePlayback);
-      engineRef.current?.off('start', updatePlayback);
-      engineRef.current?.off('complete', updatePlayback);
+      try {
+        engineRef.current?.off('update', updatePlayback);
+        engineRef.current?.off('start', updatePlayback);
+        engineRef.current?.off('complete', updatePlayback);
+        // eslint-disable-next-line no-console
+        console.log('[PreviewPanel] unhook playback listeners');
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('[PreviewPanel] Error in unhook playback', err);
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [engineRef.current]);
 
   useEffect(() => {
     const load = async () => {
-      if (engineRef.current && projectData) {
-        setIsLoading(true);
-        try {
+      try {
+        // eslint-disable-next-line no-console
+        console.log('[PreviewPanel] load timeline', { projectData, renderingTarget });
+        if (engineRef.current && projectData) {
+          setIsLoading(true);
+          try {
+            await engineRef.current.loadTimeline(
+              projectData.timeline,
+              projectData.elements
+            );
+            // eslint-disable-next-line no-console
+            console.log('[PreviewPanel] timeline loaded');
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('[PreviewPanel] Error loading timeline', error);
+          } finally {
+            setIsLoading(false);
+          }
+        } else if (engineRef.current && !projectData) {
           await engineRef.current.loadTimeline(
-            projectData.timeline,
-            projectData.elements
+            { duration: 0, sequences: [], version: 1 },
+            []
           );
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.error('Error loading timeline:', error);
-        } finally {
-          setIsLoading(false);
         }
-      } else if (engineRef.current && !projectData) {
-        await engineRef.current.loadTimeline(
-          { duration: 0, sequences: [], version: 1 },
-          []
-        );
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('[PreviewPanel] Error in load effect', err);
       }
     };
     load();
@@ -100,7 +150,11 @@ export const PreviewPanel: React.FC = () => {
         <select
           id="renderingTarget"
           value={renderingTarget}
-          onChange={e => setRenderingTarget(e.target.value as RenderingTarget)}
+          onChange={e => {
+            // eslint-disable-next-line no-console
+            console.log('[PreviewPanel] User switched renderer', e.target.value);
+            setRenderingTarget(e.target.value as RenderingTarget);
+          }}
         >
           {RENDERING_OPTIONS.map(opt => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -109,13 +163,21 @@ export const PreviewPanel: React.FC = () => {
         <div style={{ marginLeft: '2.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
           <button
             style={{ padding: '0.2em 0.9em', fontSize: '1em' }}
-            onClick={() => play()}
+            onClick={() => {
+              // eslint-disable-next-line no-console
+              console.log('[PreviewPanel] Play button clicked');
+              play();
+            }}
             disabled={!projectData}
             title="Play"
           >▶️</button>
           <button
             style={{ padding: '0.2em 0.8em', fontSize: '1em' }}
-            onClick={() => pause()}
+            onClick={() => {
+              // eslint-disable-next-line no-console
+              console.log('[PreviewPanel] Pause button clicked');
+              pause();
+            }}
             disabled={!projectData}
             title="Pause"
           >⏸️</button>
@@ -129,9 +191,16 @@ export const PreviewPanel: React.FC = () => {
               max={projectData?.timeline?.duration ?? 10}
               style={{ width: 58, marginLeft: 2 }}
               onChange={e => {
-                const time = Number(e.target.value);
-                if (!isNaN(time)) {
-                  seek(time);
+                try {
+                  const time = Number(e.target.value);
+                  if (!isNaN(time)) {
+                    // eslint-disable-next-line no-console
+                    console.log('[PreviewPanel] Seek input changed', time);
+                    seek(time);
+                  }
+                } catch (err) {
+                  // eslint-disable-next-line no-console
+                  console.error('[PreviewPanel] Error in seek input', err);
                 }
               }}
               disabled={!projectData}
