@@ -90,80 +90,149 @@ export const useProjectStore = create<ProjectState & { dirty: boolean }>((set, g
   _engine: null,
 
   attachEngine: (engine: any) => {
-    set((state) => {
-      (state as any)._engine = engine;
-      return {};
-    });
+    try {
+      // eslint-disable-next-line no-console
+      console.log('[projectStore] attachEngine', engine);
+      set((state) => {
+        (state as any)._engine = engine;
+        return {};
+      });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[projectStore] Error in attachEngine', err);
+    }
   },
 
   play: () => {
-    const s = get() as any;
-    s._engine?.play && s._engine.play();
+    try {
+      // eslint-disable-next-line no-console
+      console.log('[projectStore] play');
+      const s = get() as any;
+      s._engine?.play && s._engine.play();
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[projectStore] Error in play', err);
+    }
   },
   pause: () => {
-    const s = get() as any;
-    s._engine?.pause && s._engine.pause();
+    try {
+      // eslint-disable-next-line no-console
+      console.log('[projectStore] pause');
+      const s = get() as any;
+      s._engine?.pause && s._engine.pause();
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[projectStore] Error in pause', err);
+    }
   },
   seek: (time: number) => {
-    const s = get() as any;
-    s._engine?.seek && s._engine.seek(time);
+    try {
+      // eslint-disable-next-line no-console
+      console.log('[projectStore] seek', time);
+      const s = get() as any;
+      s._engine?.seek && s._engine.seek(time);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[projectStore] Error in seek', err);
+    }
   },
 
   setProjectData: (data, pushToUndo = true) => {
-    const prev = get().projectData;
-    const lastSaved = loadProjectFromStorage();
-    const changed = JSON.stringify(data) !== JSON.stringify(lastSaved);
+    try {
+      // eslint-disable-next-line no-console
+      console.log('[projectStore] setProjectData', { data, pushToUndo });
+      const prev = get().projectData;
+      const lastSaved = loadProjectFromStorage();
+      const changed = JSON.stringify(data) !== JSON.stringify(lastSaved);
 
-    if (pushToUndo && prev) {
-      set(state => ({
-        projectData: data,
-        undoStack: [...state.undoStack, prev],
-        redoStack: [],
-        selectedElementId: null,
-        aiError: null,
-        dirty: changed,
-      }));
-    } else {
-      set({ projectData: data, selectedElementId: null, aiError: null, dirty: changed });
+      if (pushToUndo && prev) {
+        set(state => ({
+          projectData: data,
+          undoStack: [...state.undoStack, prev],
+          redoStack: [],
+          selectedElementId: null,
+          aiError: null,
+          dirty: changed,
+        }));
+      } else {
+        set({ projectData: data, selectedElementId: null, aiError: null, dirty: changed });
+      }
+      // Throttled autosave after every projectData change
+      throttledSave(data);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[projectStore] Error in setProjectData', err);
     }
-    // Throttled autosave after every projectData change
-    throttledSave(data);
   },
 
   undo: () => {
-    const { undoStack, projectData, redoStack } = get();
-    if (undoStack.length > 0 && projectData) {
-      set({
-        projectData: undoStack[undoStack.length - 1],
-        undoStack: undoStack.slice(0, -1),
-        redoStack: [...redoStack, projectData],
-        dirty: true,
-      });
-      throttledSave(undoStack[undoStack.length - 1]);
+    try {
+      // eslint-disable-next-line no-console
+      console.log('[projectStore] undo');
+      const { undoStack, projectData, redoStack } = get();
+      if (undoStack.length > 0 && projectData) {
+        set({
+          projectData: undoStack[undoStack.length - 1],
+          undoStack: undoStack.slice(0, -1),
+          redoStack: [...redoStack, projectData],
+          dirty: true,
+        });
+        throttledSave(undoStack[undoStack.length - 1]);
+      }
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[projectStore] Error in undo', err);
     }
   },
 
   redo: () => {
-    const { redoStack, projectData, undoStack } = get();
-    if (redoStack.length > 0 && projectData) {
-      set({
-        projectData: redoStack[redoStack.length - 1],
-        redoStack: redoStack.slice(0, -1),
-        undoStack: [...undoStack, projectData],
-        dirty: true,
-      });
-      throttledSave(redoStack[redoStack.length - 1]);
+    try {
+      // eslint-disable-next-line no-console
+      console.log('[projectStore] redo');
+      const { redoStack, projectData, undoStack } = get();
+      if (redoStack.length > 0 && projectData) {
+        set({
+          projectData: redoStack[redoStack.length - 1],
+          redoStack: redoStack.slice(0, -1),
+          undoStack: [...undoStack, projectData],
+          dirty: true,
+        });
+        throttledSave(redoStack[redoStack.length - 1]);
+      }
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[projectStore] Error in redo', err);
     }
   },
 
-  setSelectedElementId: (id) => set({ selectedElementId: id }),
+  setSelectedElementId: (id) => {
+    try {
+      // eslint-disable-next-line no-console
+      console.log('[projectStore] setSelectedElementId', id);
+      set({ selectedElementId: id });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[projectStore] Error in setSelectedElementId', err);
+    }
+  },
 
-  setPlaybackState: (ps) => set({ playbackState: ps }),
+  setPlaybackState: (ps) => {
+    try {
+      // eslint-disable-next-line no-console
+      console.log('[projectStore] setPlaybackState', ps);
+      set({ playbackState: ps });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[projectStore] Error in setPlaybackState', err);
+    }
+  },
 
   generateAnimation: async (prompt) => {
     set({ isLoadingAi: true, aiError: null });
     const assistant = get().assistant;
     try {
+      // eslint-disable-next-line no-console
+      console.log('[projectStore] generateAnimation', prompt);
       const response: GenerateAnimationResponse =
         await assistant.generateAnimationStructureFromText(prompt);
       if (response.success && response.elements && response.timeline) {
@@ -184,55 +253,88 @@ export const useProjectStore = create<ProjectState & { dirty: boolean }>((set, g
           isLoadingAi: false,
           selectedElementId: null,
         });
+        // eslint-disable-next-line no-console
+        console.log('[projectStore] generateAnimation success', newProjectData);
       } else {
         set({
           isLoadingAi: false,
           aiError: response.error ?? 'Unknown AI generation error.',
         });
+        // eslint-disable-next-line no-console
+        console.warn('[projectStore] generateAnimation error', response.error);
       }
     } catch (error: any) {
       set({
         isLoadingAi: false,
         aiError: `Failed to generate animation: ${error.message}`,
       });
+      // eslint-disable-next-line no-console
+      console.error('[projectStore] generateAnimation exception', error);
     }
   },
 
   loadProject: (data) => {
-    set({ projectData: data, selectedElementId: null, aiError: null });
+    try {
+      // eslint-disable-next-line no-console
+      console.log('[projectStore] loadProject', data);
+      set({ projectData: data, selectedElementId: null, aiError: null });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[projectStore] Error in loadProject', err);
+    }
   },
 
   createNewProject: () => {
-    set({ projectData: createNewEmptyProject(), selectedElementId: null, aiError: null });
+    try {
+      // eslint-disable-next-line no-console
+      console.log('[projectStore] createNewProject');
+      set({ projectData: createNewEmptyProject(), selectedElementId: null, aiError: null });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[projectStore] Error in createNewProject', err);
+    }
   },
 
   fetchSuggestions: async () => {
-    const { assistant, projectData } = get();
-    if (!assistant || !projectData) {
-      set({ suggestionsError: 'No project loaded.', suggestions: [] });
-      return;
-    }
-    set({ isLoadingSuggestions: true, suggestionsError: null });
     try {
-      const response = await assistant.generateSuggestions({
-        elements: projectData.elements,
-        timeline: projectData.timeline,
-      });
-      if (response && response.success && response.suggestions) {
-        set({ suggestions: response.suggestions, isLoadingSuggestions: false });
-      } else {
+      // eslint-disable-next-line no-console
+      console.log('[projectStore] fetchSuggestions');
+      const { assistant, projectData } = get();
+      if (!assistant || !projectData) {
+        set({ suggestionsError: 'No project loaded.', suggestions: [] });
+        return;
+      }
+      set({ isLoadingSuggestions: true, suggestionsError: null });
+      try {
+        const response = await assistant.generateSuggestions({
+          elements: projectData.elements,
+          timeline: projectData.timeline,
+        });
+        if (response && response.success && response.suggestions) {
+          set({ suggestions: response.suggestions, isLoadingSuggestions: false });
+          // eslint-disable-next-line no-console
+          console.log('[projectStore] fetchSuggestions success', response.suggestions);
+        } else {
+          set({
+            suggestionsError: response?.error ?? 'AI did not return suggestions.',
+            suggestions: [],
+            isLoadingSuggestions: false,
+          });
+          // eslint-disable-next-line no-console
+          console.warn('[projectStore] fetchSuggestions error', response?.error);
+        }
+      } catch (err: any) {
         set({
-          suggestionsError: response?.error ?? 'AI did not return suggestions.',
           suggestions: [],
           isLoadingSuggestions: false,
+          suggestionsError: `Suggestion error: ${err.message}`,
         });
+        // eslint-disable-next-line no-console
+        console.error('[projectStore] fetchSuggestions exception', err);
       }
-    } catch (err: any) {
-      set({
-        suggestions: [],
-        isLoadingSuggestions: false,
-        suggestionsError: `Suggestion error: ${err.message}`,
-      });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[projectStore] Error in fetchSuggestions', err);
     }
   },
 }));
